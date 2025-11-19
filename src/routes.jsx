@@ -11,6 +11,7 @@ import StorePage from "./pages/store";
 import CouponPage from "./pages/coupons";
 import SettingsPage from "./pages/settings";
 import AddProductPage from "./pages/products/add-product-page";
+import CollectionPage from "./pages/products/collection-page";
 
 export const routes = createBrowserRouter([
   {
@@ -36,6 +37,10 @@ export const routes = createBrowserRouter([
       {
         path: "/products/add-new-product",
         element: <AddProductPage />,
+      },
+      {
+        path: "/products/collections",
+        element: <CollectionPage />,
       },
       {
         path: "/sales",

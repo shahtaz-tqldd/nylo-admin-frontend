@@ -94,7 +94,7 @@ const SideMenu = () => {
         </ul>
       </div>
 
-      <div className="bg-primary/15 p-3 rounded-lg flex items-center gap-2">
+      <div className="bg-primary/10 p-3 rounded-lg flex items-center gap-2">
         <img
           src="https://media.licdn.com/dms/image/v2/D5603AQFNKfEBpcynJw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1722787149506?e=2147483647&v=beta&t=snYVYV9rYKnqQVnkWUAjtnQO1n_d6auaquNfuSvT3fg"
           className="h-9 w-9 rounded-full"

@@ -95,24 +95,20 @@ const AddProductPage = () => {
   return (
     <div className="">
       {/* Header */}
-      <div className="">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center">
-            <div>
-              <Title variant="lg" className="text-gray-900">
-                Add New Product
-              </Title>
-              <Text className="mt-1 text-gray-500">
-                Create a new shoe product listing with complete details
-              </Text>
-            </div>
-
-            <Button variant="outline" className="flex items-center gap-2">
-              <Download size={18} />
-              Import CSV
-            </Button>
-          </div>
+      <div className="flbx">
+        <div>
+          <Title variant="lg" className="text-gray-900">
+            Add New Product
+          </Title>
+          <Text className="mt-1 text-gray-500">
+            Create a new shoe product listing with complete details
+          </Text>
         </div>
+
+        <Button variant="outline" className="flex items-center gap-2">
+          <Download size={18} />
+          Import CSV
+        </Button>
       </div>
 
       <div className="mt-8">

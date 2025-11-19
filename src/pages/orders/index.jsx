@@ -1,7 +1,7 @@
 import DataTable from "@/components/table";
 import { Button } from "@/components/ui/button";
 import { Text, Title } from "@/components/ui/typography";
-import { Download, Plus } from "lucide-react";
+import { Download, Plus, Upload } from "lucide-react";
 import React from "react";
 
 const OrderPage = () => {
@@ -58,14 +58,18 @@ const OrderPage = () => {
             High-level summary of orders and their analytics
           </Text>
         </div>
-        <div className="flx gap-2">
-          <Button variant="outline" className="flex">
-            <Download />
-            Export
+        <div className="flx gap-4">
+          <Button variant="outline" className="pl-3 pr-4">
+            <div className="flx gap-2">
+              <Upload className="!h-3.5" />
+              Export
+            </div>
           </Button>
-          <Button className="flex">
-            <Plus />
-            Order
+          <Button className="pl-3 pr-4">
+            <div className="flx gap-2">
+              <Plus className="!h-3.5" />
+              Order
+            </div>
           </Button>
         </div>
       </div>
