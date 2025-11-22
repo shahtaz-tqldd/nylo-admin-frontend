@@ -61,7 +61,7 @@ const SideMenu = () => {
     { id: 8, label: "Storefront", link: "/store", icon: <Store size={18} /> },
     {
       id: 10,
-      label: "Settings",
+      label: "Account Settings",
       link: "/settings",
       icon: <Settings size={18} />,
     },

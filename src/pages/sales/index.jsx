@@ -23,32 +23,39 @@ const SalesPage = () => {
         </Button>
       </div>
 
-      {/* ---------------- TOP KPI CARDS ---------------- */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* KPI: Total Revenue */}
-        <div className="h-28 border rounded-xl bg-gray-50 flex items-center justify-center">
-          Total Revenue (Card)
-        </div>
-
-        {/* KPI: Total Orders */}
-        <div className="h-28 border rounded-xl bg-gray-50 flex items-center justify-center">
-          Total Orders (Card)
-        </div>
-
-        {/* KPI: Average Order Value */}
-        <div className="h-28 border rounded-xl bg-gray-50 flex items-center justify-center">
-          Avg Order Value (Card)
-        </div>
-
-        {/* KPI: Returning Customers */}
-        <div className="h-28 border rounded-xl bg-gray-50 flex items-center justify-center">
-          Returning Customers (Card)
+      {/* TOP KPI */}
+      <section>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+          <div className="bg-gray-100 rounded-lg p-6">
+            <Title variant="sm">Total Revenue</Title>
+            <Text variant="sm" className="mt-2">
+              Display total revenue generated over selected period.
+            </Text>
+          </div>
+          <div className="bg-gray-100 rounded-lg p-6">
+            <Title variant="sm">Total Orders</Title>
+            <Text variant="sm" className="mt-2">
+              Total number of orders and order distribution summary.
+            </Text>
+          </div>
+          <div className="bg-gray-100 rounded-lg p-6">
+            <Title variant="sm">Avg Order Value</Title>
+            <Text variant="sm" className="mt-2">
+              Total active customers and new sign-ups.
+            </Text>
+          </div>
+          <div className="bg-gray-100 rounded-lg p-6">
+            <Title variant="sm">Returning Customers</Title>
+            <Text variant="sm" className="mt-2">
+              Inventory count, active products, and stock warnings.
+            </Text>
+          </div>
         </div>
       </section>
 
-      {/* ---------------- SALES OVER TIME CHART ---------------- */}
-      <section className="border rounded-xl p-4 h-80 bg-white">
-        <div className="flex justify-between mb-4">
+      {/* SALES OVER TIME CHART*/}
+      <section className="border rounded-xl p-4 h-80 bg-white flex flex-col gap-4">
+        <div className="flbx">
           <h2 className="text-lg font-semibold">Sales Over Time</h2>
           {/* Date Filter Placeholder */}
           <div className="w-32 h-8 border rounded-md flex items-center justify-center text-sm text-gray-600">
@@ -57,14 +64,13 @@ const SalesPage = () => {
         </div>
 
         {/* chart placeholder */}
-        <div className="h-full bg-gray-50 rounded-lg flex items-center justify-center">
+        <div className="flex-1 h-full bg-gray-50 rounded-lg center">
           Chart (Line / Area)
         </div>
       </section>
 
-      {/* ---------------- ROW: TOP PRODUCTS + CATEGORY BREAKDOWN ---------------- */}
+      {/* TOP SELLING PRODUCTS */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* TOP SELLING PRODUCTS */}
         <div className="border rounded-xl p-4 bg-white h-80">
           <h2 className="text-lg font-semibold mb-4">Top Selling Products</h2>
 
@@ -91,20 +97,19 @@ const SalesPage = () => {
         </div>
       </section>
 
-      {/* ---------------- SALES CHANNELS + REGIONS ---------------- */}
+      {/* SALES BY CHANNEL */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* SALES BY CHANNEL */}
-        <div className="border rounded-xl p-4 bg-white h-64">
-          <h2 className="text-lg font-semibold mb-4">Sales by Channel</h2>
-          <div className="h-full bg-gray-50 rounded-lg flex items-center justify-center">
+        <div className="border rounded-xl p-4 bg-white h-72 flex flex-col gap-4">
+          <h2 className="text-lg font-semibold">Sales by Channel</h2>
+          <div className="flex-1 h-full bg-gray-50 rounded-lg center">
             Donut / Bar Chart Placeholder
           </div>
         </div>
 
         {/* SALES BY REGION */}
-        <div className="border rounded-xl p-4 bg-white h-64">
-          <h2 className="text-lg font-semibold mb-4">Sales by Region</h2>
-          <div className="h-full bg-gray-50 rounded-lg flex items-center justify-center">
+        <div className="border rounded-xl p-4 bg-white h-72 flex flex-col gap-4">
+          <h2 className="text-lg font-semibold">Sales by Region</h2>
+          <div className="flex-1 h-full bg-gray-50 rounded-lg center">
             Map / Region Chart Placeholder
           </div>
         </div>

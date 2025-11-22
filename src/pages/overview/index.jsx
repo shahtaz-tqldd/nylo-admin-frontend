@@ -15,9 +15,6 @@ const Overview = () => {
 
       {/* Stats section */}
       <section>
-        <Title>Key Metrics</Title>
-        <Text className="mt-2">Primary KPIs of your store on this month</Text>
-
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
           <div className="bg-gray-100 rounded-lg p-6">
             <Title variant="sm">Total Revenue</Title>
