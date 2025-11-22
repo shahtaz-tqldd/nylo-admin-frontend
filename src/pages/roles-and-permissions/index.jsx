@@ -245,7 +245,7 @@ const RolesAndPermissionPage = () => {
                         key={permission.id}
                         className={`p-3 rounded-lg border ${
                           role.permissions.includes(permission.id)
-                            ? "border-primary/40 bg-primary/10"
+                            ? "border-primary/40 bg-primary/5"
                             : "border-gray-200 bg-gray-50"
                         }`}
                       >

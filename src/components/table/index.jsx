@@ -200,12 +200,12 @@ export default function DataTable({
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-gray-200 overflow-hidden">
+      <div className="rounded-lg border border-gray-200 overflow-hidden !bg-white">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="!bg-primary/10 !text-primary">
               {isShowCheckbox && (
-                <TableHead className="w-12">
+                <TableHead className="w-12 px-4">
                   <div className="flex items-center">
                     <Checkbox
                       aria-label="Select all"
@@ -256,7 +256,7 @@ export default function DataTable({
                 return (
                   <TableRow key={String(rowId)} className="hover:bg-muted/50">
                     {isShowCheckbox && (
-                      <TableCell className="w-12">
+                      <TableCell className="w-12 px-4">
                         <Checkbox
                           checked={selection.has(rowId)}
                           onCheckedChange={() => toggleRow(rowId)}
@@ -284,8 +284,8 @@ export default function DataTable({
                       <TableCell className="w-12 px-4 text-center">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="rubix" size="sm" className="p-1">
-                              <MoreHorizontal className="h-4 w-4" />
+                            <Button variant="rubix" size="sm" className="p-2">
+                              <MoreHorizontal className="h-5 w-5" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -356,7 +356,7 @@ export default function DataTable({
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <Dot />
+          <Dot className="text-gray-500" />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <div>
               Page {page} of {pageCount}

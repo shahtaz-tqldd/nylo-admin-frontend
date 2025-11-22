@@ -15,9 +15,9 @@ const ThreeDotMenu = ({ actions, align = "end", className }) => {
         <Button
           variant="ghost"
           size="sm"
-          className={`p-1 h-8 w-8 rounded-full ${className}`}
+          className={`h-9 w-9 rounded-full ${className}`}
         >
-          <MoreHorizontal className="h-4 w-4" />
+          <MoreHorizontal className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>
 

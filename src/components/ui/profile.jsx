@@ -13,7 +13,7 @@ export const TableUserProfile = ({ name, email, img_url = "" }) => {
         </div>
       )}
       <div>
-        <h2 className="font-semibold">{name}</h2>
+        <h2 className="font-medium text-sm">{name}</h2>
         <Text variant="sm">{email}</Text>
       </div>
     </div>
