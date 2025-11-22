@@ -6,7 +6,7 @@ import OrderPage from "./pages/orders";
 import ProductPage from "./pages/products";
 import SalesPage from "./pages/sales";
 import MessagesPage from "./pages/messages";
-import ManagersPage from "./pages/managers";
+import RolesAndPermissionPage from "./pages/roles-and-permissions";
 import StorePage from "./pages/store";
 import CouponPage from "./pages/coupons";
 import SettingsPage from "./pages/settings";
@@ -51,8 +51,8 @@ export const routes = createBrowserRouter([
         element: <MessagesPage />,
       },
       {
-        path: "/managers",
-        element: <ManagersPage />,
+        path: "/roles-and-permissions",
+        element: <RolesAndPermissionPage />,
       },
       {
         path: "/store",

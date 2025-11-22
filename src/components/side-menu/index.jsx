@@ -49,11 +49,16 @@ const SideMenu = () => {
       link: "/messages",
       icon: <MessageSquare size={18} />,
     },
-    { id: 7, label: "Managers", link: "/managers", icon: <Shield size={18} /> },
-    { id: 8, label: "Storefront", link: "/store", icon: <Store size={18} /> },
-
-    // 💡 Additional eCommerce admin suggested:
     { id: 9, label: "Coupons", link: "/coupons", icon: <Tags size={18} /> },
+    {
+      id: 7,
+      label: "Roles & Permissions",
+      link: "/roles-and-permissions",
+      icon: <Shield size={18} />,
+    },
+    
+    // 💡 Additional eCommerce admin suggested:
+    { id: 8, label: "Storefront", link: "/store", icon: <Store size={18} /> },
     {
       id: 10,
       label: "Settings",

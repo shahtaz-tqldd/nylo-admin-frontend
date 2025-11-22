@@ -9,6 +9,7 @@ const StatusBadge = ({ status }) => {
     inactive: "bg-gray-100 text-gray-700",
     blocked: "bg-red-100 text-red-700",
     pending: "bg-yellow-100 text-yellow-700",
+    accepted: "bg-emerald-100 text-emerald-700",
     "pending payment": "bg-yellow-100 text-yellow-700",
     cancelled: "bg-red-100 text-red-700",
     shipped: "bg-blue-100 text-blue-700",
@@ -21,7 +22,7 @@ const StatusBadge = ({ status }) => {
   return (
     <span
       className={clsx(
-        "px-3 py-1 text-xs font-semibold rounded-md",
+        "px-3 py-1 text-xs font-semibold rounded-md capitalize",
         appliedStyle
       )}
     >
