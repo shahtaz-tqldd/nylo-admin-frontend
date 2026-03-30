@@ -13,6 +13,7 @@ import {
   Settings,
 } from "lucide-react";
 import logo from "@/assets/images/logo.svg";
+import { useSelector } from "react-redux";
 
 const SideMenu = () => {
   const location = useLocation();
@@ -56,7 +57,7 @@ const SideMenu = () => {
       link: "/roles-and-permissions",
       icon: <Shield size={18} />,
     },
-    
+
     // 💡 Additional eCommerce admin suggested:
     { id: 8, label: "Storefront", link: "/store", icon: <Store size={18} /> },
     {
@@ -66,6 +67,13 @@ const SideMenu = () => {
       icon: <Settings size={18} />,
     },
   ];
+
+  const { user } = useSelector((state) => state.auth);
+  const full_name = user
+    ? `${user.first_name} ${user.last_name}`
+    : "Store Admin";
+  const role = user ? user.role : "Admin";
+  const profileImage = user?.profile_picture_url;
 
   return (
     <div className="max-w-[240px] w-full h-screen bg-primary/15 p-6 pr-2 flex flex-col justify-between">
@@ -99,14 +107,17 @@ const SideMenu = () => {
         </ul>
       </div>
 
-      <div className="bg-primary/10 p-3 rounded-lg flex items-center gap-2">
-        <img
-          src="https://media.licdn.com/dms/image/v2/D5603AQFNKfEBpcynJw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1722787149506?e=2147483647&v=beta&t=snYVYV9rYKnqQVnkWUAjtnQO1n_d6auaquNfuSvT3fg"
-          className="h-9 w-9 rounded-full"
-        />
+      <div className="bg-primary/5 border border-primary/20 p-3 rounded-lg flex items-center gap-2">
+        {profileImage ? (
+          <img src={profileImage} className="h-9 w-9 rounded-full" />
+        ) : (
+          <div className="h-9 w-9 rounded-full bg-primary/15 font-semibold center text-primary">
+            {full_name.charAt(0).toUpperCase()}
+          </div>
+        )}
         <div className="flex-1">
-          <h2 className="text-sm text-primary font-medium">Shahtaz Rahman</h2>
-          <p className="text-xs text-primary/75">Store Admin</p>
+          <h2 className="text-sm text-primary font-medium">{full_name}</h2>
+          <p className="text-xs text-primary/75">{role}</p>
         </div>
       </div>
     </div>

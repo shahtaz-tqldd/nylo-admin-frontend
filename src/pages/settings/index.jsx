@@ -4,16 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Text, Title } from "@/components/ui/typography";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   User,
   Lock,
-  Bell,
   Shield,
   Upload,
   Save,
@@ -36,6 +28,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { userLoggedOut } from "@/features/auth/authSlice";
+import { useDispatch } from "react-redux";
 
 const SettingsPage = () => {
   const [profileData, setProfileData] = useState({
@@ -113,10 +107,9 @@ const SettingsPage = () => {
       confirmPassword: "",
     });
   };
-
+  const dispatch = useDispatch();
   const handleLogout = () => {
-    console.log("Logging out...");
-    alert("You have been logged out successfully!");
+    dispatch(userLoggedOut());
     setShowLogoutDialog(false);
   };
   const activityLogs = [
@@ -469,7 +462,7 @@ const SettingsPage = () => {
                   onClick={() =>
                     handlePreferenceChange(
                       "twoFactorAuth",
-                      !preferences.twoFactorAuth
+                      !preferences.twoFactorAuth,
                     )
                   }
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
