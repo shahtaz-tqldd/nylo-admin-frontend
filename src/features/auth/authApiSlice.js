@@ -64,10 +64,10 @@ export const authApiSlice = apiSlice.injectEndpoints({
       },
     }),
 
-    userList: builder.query({
+    customerList: builder.query({
       query: ({ page, page_size, search_str }) => {
         return {
-          url: `/auth/list?page=${page}&page_size=${page_size}&search_str=${
+          url: `/auth/admin/customers?page=${page}&page_size=${page_size}&search_str=${
             search_str || ""
           }`,
           method: "GET",
@@ -84,5 +84,5 @@ export const {
   useResetPasswordMutation,
   useMeQuery,
   useChangePasswordMutation,
-  useUserListQuery,
+  useCustomerListQuery,
 } = authApiSlice;

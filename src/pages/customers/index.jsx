@@ -2,16 +2,40 @@ import DataTable from "@/components/table";
 import { Button } from "@/components/ui/button";
 import { Text, Title } from "@/components/ui/typography";
 import { Plus } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { DEMO_CUSTOMERS } from "./demo-data";
+import { useCustomerListQuery } from "@/features/auth/authApiSlice";
+import moment from "moment";
+import { TableUserProfile } from "@/components/ui/profile";
 
 const CustomerPage = () => {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [search, setSearch] = useState("");
+  const { data } = useCustomerListQuery({
+    page,
+    page_size: pageSize,
+    search_str: search,
+  });
+  const customers =
+    data?.data?.map((item) => ({
+      customer: <TableUserProfile name={item.full_name} email={item.email} />,
+      phone: item.phone,
+      region: item.region,
+      last_active: item.last_active_at
+        ? moment(item.last_active_at).format("MMM Do YYYY hh:mm a")
+        : "-",
+      date_joined: moment(item.date_joined).format("MMM Do YYYY"),
+      message_count: item.message_count,
+      order_count: item.order_count,
+      status: item.status,
+    })) || [];
   const customerColumns = [
     { key: "customer", header: "Customer" },
     { key: "phone", header: "Phone Number" },
     { key: "region", header: "Region" },
     { key: "last_active", header: "Last Active" },
-    { key: "created_at", header: "Joined On", sortable: true },
+    { key: "date_joined", header: "Joined On", sortable: true },
     { key: "message_count", header: "Messages" },
     { key: "order_count", header: "Orders", sortable: true },
     { key: "status", header: "Status" },
@@ -33,7 +57,7 @@ const CustomerPage = () => {
       </div>
 
       <DataTable
-        data={DEMO_CUSTOMERS}
+        data={customers}
         columns={customerColumns}
         defaultPageSize={10}
         className="mt-8"

@@ -502,7 +502,7 @@ const SettingsPage = () => {
 
           {/* Danger Zone */}
           <div className="bg-white rounded-lg border border-red-200 shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-red-600 mb-4">
+            <h2 className="text-lg font-semibold text-red-700 mb-4">
               Danger Zone
             </h2>
             <div className="space-y-4">
