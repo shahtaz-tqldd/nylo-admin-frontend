@@ -1,12 +1,38 @@
-import DataTable from "@/components/table";
 import React from "react";
-import { DEMO_PRODUCTS } from "./demo-data";
+import DataTable from "@/components/table";
 import { Text, Title } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import { Layers, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useProductListQuery } from "@/features/products/productApiSlice";
 
 const ProductPage = () => {
+  const { data, isLoading } = useProductListQuery();
+  const PLACEHOLDER_IAMGE =
+    "https://images.unsplash.com/photo-1529810313688-44ea1c2d81d3?q=80&w=100";
+  const products =
+    data?.data?.map((item) => ({
+      id: item?.id,
+      product: (
+        <div className="flx gap-2">
+          <img
+            src={item?.image_url || PLACEHOLDER_IAMGE}
+            className="h-10 w-10 rounded-lg object-cover"
+          />
+          <div>
+            <h2 className="font-semibold">{item?.title}</h2>
+            <p className="text-sm opacity-60">{item?.brand}</p>
+          </div>
+        </div>
+      ),
+      price: `$${item.price}`,
+      category: item.category_name,
+      stock: item?.stock,
+      created_at: new Date(item.created_at).toLocaleDateString(),
+      order_count: item?.order_count,
+      status: item?.status,
+    })) || [];
+
   const productColumns = [
     { key: "product", header: "Product" },
     { key: "price", header: "Price", sortable: true },
@@ -48,7 +74,7 @@ const ProductPage = () => {
       </div>
 
       <DataTable
-        data={DEMO_PRODUCTS}
+        data={products}
         columns={productColumns}
         defaultPageSize={10}
         className="mt-8"

@@ -1,24 +1,32 @@
+import React, { useState } from "react";
+import moment from "moment";
+
+// components
 import DataTable from "@/components/table";
 import { Button } from "@/components/ui/button";
 import { Text, Title } from "@/components/ui/typography";
-import { Plus } from "lucide-react";
-import React, { useState } from "react";
-import { DEMO_CUSTOMERS } from "./demo-data";
-import { useCustomerListQuery } from "@/features/auth/authApiSlice";
-import moment from "moment";
 import { TableUserProfile } from "@/components/ui/profile";
+
+// features
+import { useCustomerListQuery } from "@/features/auth/authApiSlice";
+
+// icons
+import { Plus } from "lucide-react";
 
 const CustomerPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
+
   const { data } = useCustomerListQuery({
     page,
     page_size: pageSize,
     search_str: search,
   });
+
   const customers =
     data?.data?.map((item) => ({
+      id: item.id,
       customer: <TableUserProfile name={item.full_name} email={item.email} />,
       phone: item.phone,
       region: item.region,
@@ -30,6 +38,7 @@ const CustomerPage = () => {
       order_count: item.order_count,
       status: item.status,
     })) || [];
+
   const customerColumns = [
     { key: "customer", header: "Customer" },
     { key: "phone", header: "Phone Number" },
