@@ -9,7 +9,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-const DeleteDialog = ({ isOpen, setIsOpen, onConfirm }) => {
+const DeleteDialog = ({
+  isOpen,
+  setIsOpen,
+  onConfirm = () => {},
+  isLoading = false,
+}) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent>
@@ -27,12 +32,13 @@ const DeleteDialog = ({ isOpen, setIsOpen, onConfirm }) => {
 
           <Button
             variant="destructive"
+            disabled={isLoading}
             onClick={() => {
               onConfirm();
               setIsOpen(false);
             }}
           >
-            Delete
+            {isLoading ? "Deleting..." : "Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>

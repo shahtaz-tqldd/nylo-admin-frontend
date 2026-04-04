@@ -51,7 +51,7 @@ function FloatingSelect({
         >
           <SelectTrigger
             className={cn(
-              "!h-auto min-h-[50px] w-full rounded-xl border border-slate-300 bg-white px-4 pt-5 pb-3 text-left text-sm text-slate-900 focus:border-primary focus:ring-4 focus:ring-primary/10",
+              "!h-auto min-h-[54px] w-full rounded-xl border border-slate-300 bg-white px-4 pt-5 pb-3 text-left text-sm text-slate-900 focus:border-primary focus:ring-4 focus:ring-primary/10",
               triggerClassName,
             )}
           >

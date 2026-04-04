@@ -12,11 +12,17 @@ import {
 } from "@/components/ui/dialog";
 import { FloatingInput } from "@/components/ui/input";
 
-import { useCreateSizeMutation } from "@/features/products/productApiSlice";
+import {
+  useCreateSizeMutation,
+  useUpdateSizeMutation,
+} from "@/features/products/productApiSlice";
 
-const SizeUpsertDialog = ({ open, setOpen, sizes }) => {
-  const [sizeValue, setsizeValue] = useState("");
+const SizeUpsertDialog = ({ open, setOpen, sizes, initialData = null }) => {
+  const [sizeValue, setsizeValue] = useState(initialData?.name ?? "");
   const [createSize, { isLoading }] = useCreateSizeMutation();
+  const [updateSize, { isLoading: isLoadingUpdate }] = useUpdateSizeMutation();
+  const isEditMode = Boolean(initialData?.id);
+  const isSubmitting = isLoading || isLoadingUpdate;
 
   const handleCreateSize = async () => {
     const normalizedName = sizeValue.trim();
@@ -26,21 +32,40 @@ const SizeUpsertDialog = ({ open, setOpen, sizes }) => {
     }
 
     try {
-      const res = await createSize({ name: normalizedName }).unwrap();
+      const res = isEditMode
+        ? await updateSize({
+            id: initialData.id,
+            body: { name: normalizedName },
+          }).unwrap()
+        : await createSize({ name: normalizedName }).unwrap();
 
-      if (res?.data?.success) {
-        toast.success(res?.data?.message || "New Size created!");
+      if (res?.data?.success || res?.success) {
+        toast.success(
+          res?.data?.message ||
+            res?.message ||
+            (isEditMode ? "Size updated!" : "New Size created!"),
+        );
+        setsizeValue("");
         setOpen(false);
       }
     } catch (error) {
-      toast.error(`Size creation failed: ${error}`);
+      toast.error(
+        `Size ${isEditMode ? "update" : "creation"} failed: ${
+          error?.data?.message || error?.message || "Unknown error"
+        }`,
+      );
     }
   };
+
+  React.useEffect(() => {
+    setsizeValue(initialData?.name ?? "");
+  }, [initialData, open]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Size</DialogTitle>
+          <DialogTitle>{isEditMode ? "Update Size" : "Add New Size"}</DialogTitle>
           <DialogDescription>
             Existing sizes:{" "}
             {sizes.length > 0
@@ -65,8 +90,16 @@ const SizeUpsertDialog = ({ open, setOpen, sizes }) => {
           >
             Cancel
           </Button>
-          <Button type="button" onClick={handleCreateSize} disabled={isLoading}>
-            {isLoading ? "Saving..." : "Save Size"}
+          <Button
+            type="button"
+            onClick={handleCreateSize}
+            disabled={isSubmitting}
+          >
+            {isSubmitting
+              ? "Saving..."
+              : isEditMode
+                ? "Update Size"
+                : "Save Size"}
           </Button>
         </DialogFooter>
       </DialogContent>

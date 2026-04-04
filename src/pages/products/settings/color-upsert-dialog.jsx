@@ -12,13 +12,22 @@ import {
 } from "@/components/ui/dialog";
 import { FloatingInput } from "@/components/ui/input";
 
-import { useCreateColorMutation } from "@/features/products/productApiSlice";
+import {
+  useCreateColorMutation,
+  useUpdateColorMutation,
+} from "@/features/products/productApiSlice";
 import { Label } from "@/components/ui/label";
 
-const ColorUpsertDialog = ({ open, setOpen }) => {
-  const [newColorName, setNewColorName] = useState("");
-  const [newColorCode, setNewColorCode] = useState("#111827");
+const ColorUpsertDialog = ({ open, setOpen, initialData = null }) => {
+  const [newColorName, setNewColorName] = useState(initialData?.name ?? "");
+  const [newColorCode, setNewColorCode] = useState(
+    initialData?.color_code ?? "#111827",
+  );
   const [createColor, { isLoading }] = useCreateColorMutation();
+  const [updateColor, { isLoading: isLoadingUpdate }] =
+    useUpdateColorMutation();
+  const isEditMode = Boolean(initialData?.id);
+  const isSubmitting = isLoading || isLoadingUpdate;
 
   const handleCreateColor = async () => {
     const normalizedName = newColorName.trim();
@@ -33,23 +42,42 @@ const ColorUpsertDialog = ({ open, setOpen }) => {
     };
 
     try {
-      const res = await createColor(color).unwrap();
+      const res = isEditMode
+        ? await updateColor({
+            id: initialData.id,
+            body: color,
+          }).unwrap()
+        : await createColor(color).unwrap();
 
-      if (res?.data?.success) {
-        toast.success(res.data.message);
+      if (res?.data?.success || res?.success) {
+        toast.success(
+          res?.data?.message ||
+            res?.message ||
+            (isEditMode ? "Color updated successfully!" : "Color created!"),
+        );
         setNewColorName("");
         setNewColorCode("#111827");
         setOpen(false);
       }
     } catch (error) {
-      toast.error(`Color creation failed: ${error}`);
+      toast.error(
+        `Color ${isEditMode ? "update" : "creation"} failed: ${
+          error?.data?.message || error?.message || "Unknown error"
+        }`,
+      );
     }
   };
+
+  React.useEffect(() => {
+    setNewColorName(initialData?.name ?? "");
+    setNewColorCode(initialData?.color_code ?? "#111827");
+  }, [initialData, open]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Color</DialogTitle>
+          <DialogTitle>{isEditMode ? "Update Color" : "Add New Color"}</DialogTitle>
           <DialogDescription>
             Create a color with name and picker value.
           </DialogDescription>
@@ -93,9 +121,13 @@ const ColorUpsertDialog = ({ open, setOpen }) => {
           <Button
             type="button"
             onClick={handleCreateColor}
-            disabled={isLoading}
+            disabled={isSubmitting}
           >
-            {isLoading ? "Saving..." : "Save Color"}
+            {isSubmitting
+              ? "Saving..."
+              : isEditMode
+                ? "Update Color"
+                : "Save Color"}
           </Button>
         </DialogFooter>
       </DialogContent>

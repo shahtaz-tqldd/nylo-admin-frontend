@@ -14,19 +14,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  MoreHorizontal,
-  ChevronsUpDown,
-  SearchIcon,
-  ChevronDown,
-  Dot,
-} from "lucide-react";
+import { ChevronsUpDown, SearchIcon, ChevronDown, Dot } from "lucide-react";
 import { Button } from "../ui/button";
 import Pagination from "../pagination";
 import { cn } from "@/lib/utils";
 import { Text } from "../ui/typography";
 import DeleteDialog from "../dialog/delete-dialog";
 import { useNavigate } from "react-router-dom";
+import ThreeDotMenu from "../dropdown/three-dot-menu";
 
 function defaultGetRowId(row, idx) {
   if (row.id !== undefined) return row.id;
@@ -37,6 +32,7 @@ function defaultGetRowId(row, idx) {
 export default function DataTable({
   data,
   columns,
+  defaultPageSize = 10,
   pageSizeOptions = [10, 25, 50],
   selectedIds: controlledSelectedIds,
   onSelectionChange,
@@ -50,13 +46,26 @@ export default function DataTable({
   setPage,
   pageSize,
   setPageSize,
+  rowActions,
+  toolbar,
+  searchPlaceholder = "Search...",
+  searchValue: controlledSearchValue,
+  onSearchChange,
+  isSearchable = true,
 }) {
-  const [query, setQuery] = useState("");
+  const [internalQuery, setInternalQuery] = useState("");
+  const [internalPage, setInternalPage] = useState(1);
+  const [internalPageSize, setInternalPageSize] = useState(defaultPageSize);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("asc");
   const [selected, setSelected] = useState(new Set());
-  const skeletonRows = Array.from({ length: pageSize }, (_, idx) => idx);
+  const query = controlledSearchValue ?? internalQuery;
+  const currentPage = page ?? internalPage;
+  const currentPageSize = pageSize ?? internalPageSize;
+  const updatePage = setPage ?? setInternalPage;
+  const updatePageSize = setPageSize ?? setInternalPageSize;
+  const skeletonRows = Array.from({ length: currentPageSize }, (_, idx) => idx);
   const tableColumnCount =
     columns.length + (isShowCheckbox ? 1 : 0) + (isShowActions ? 1 : 0);
 
@@ -73,7 +82,11 @@ export default function DataTable({
     const q = query.toLowerCase();
     return data.filter((row) => {
       for (const col of columns) {
-        const raw = col.accessor ? col.accessor(row) : row[col.key];
+        const raw = col.searchAccessor
+          ? col.searchAccessor(row)
+          : col.accessor
+            ? col.accessor(row)
+            : row[col.key];
         if (raw === null || raw === undefined) continue;
         const s = String(raw).toLowerCase();
         if (s.includes(q)) return true;
@@ -86,24 +99,29 @@ export default function DataTable({
   const sorted = useMemo(() => {
     if (!sortKey) return filtered;
     const key = sortKey;
+    const sortedColumn = columns.find((col) => col.key === key);
     const dir = sortDir === "asc" ? 1 : -1;
     return [...filtered].sort((a, b) => {
-      const va = a[key] ?? "";
-      const vb = b[key] ?? "";
+      const va = sortedColumn?.accessor
+        ? sortedColumn.accessor(a)
+        : (a[key] ?? "");
+      const vb = sortedColumn?.accessor
+        ? sortedColumn.accessor(b)
+        : (b[key] ?? "");
 
       if (typeof va === "number" && typeof vb === "number")
         return (va - vb) * dir;
       return String(va).localeCompare(String(vb)) * dir;
     });
-  }, [filtered, sortKey, sortDir]);
+  }, [columns, filtered, sortKey, sortDir]);
 
   // Pagination
   const total = sorted.length;
-  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const pageCount = Math.max(1, Math.ceil(total / currentPageSize));
   const current = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return sorted.slice(start, start + pageSize);
-  }, [sorted, page, pageSize]);
+    const start = (currentPage - 1) * currentPageSize;
+    return sorted.slice(start, start + currentPageSize);
+  }, [sorted, currentPage, currentPageSize]);
 
   // Selection helpers
   const toggleRow = (rowId) => {
@@ -135,60 +153,67 @@ export default function DataTable({
       setSortKey(key);
       setSortDir("asc");
     }
-    setPage(1);
+    updatePage(1);
   };
 
   const navigate = useNavigate();
+
+  const handleSearchChange = (value) => {
+    if (onSearchChange) {
+      onSearchChange(value);
+    }
+
+    if (controlledSearchValue === undefined) {
+      setInternalQuery(value);
+    }
+
+    updatePage(1);
+  };
+
+  const getDefaultRowActions = (rowId) => [
+    {
+      label: "View",
+      onSelect: () => console.log("Action: view", rowId),
+    },
+    {
+      label: "Edit",
+      onSelect: () => navigate(`/products/update/${rowId}`),
+    },
+    {
+      label: "Delete",
+      onSelect: () => setIsDeleteDialogOpen(true),
+      destructive: true,
+    },
+  ];
 
   return (
     <div className={cn("w-full space-y-4", className)}>
       {/* search + filters */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div className="relative max-w-[340px] w-full flex-1">
-          <SearchIcon
-            size={16}
-            className="absolute top-[11px] left-2.5 text-gray-400"
-          />
-          <input
-            placeholder="Search..."
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setPage(1);
-            }}
-            className="py-2 pl-8 pr-4 rounded-md text-sm w-full bg-gray-50 border border-primary/20 focus:border-primary focus:outline-none tr"
-          />
-        </div>
-        <div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="pl-3 pr-2">
-                <div className="flx gap-2">
-                  <span>Status</span>
-                  <ChevronDown />
-                </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {/* Example default actions; consumer can ignore and render their own via renderRowActions */}
-              <DropdownMenuItem onSelect={() => console.log("Action: view")}>
-                Active
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => console.log("Action: edit")}>
-                Blocked
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => console.log("Action: delete")}>
-                Inactive
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        {isSearchable ? (
+          <div className="relative max-w-[340px] w-full flex-1">
+            <SearchIcon
+              size={16}
+              className="absolute top-[11px] left-2.5 text-gray-400"
+            />
+            <input
+              placeholder={searchPlaceholder}
+              value={query}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="py-2 pl-8 pr-4 rounded-md text-sm w-full bg-gray-50 border border-primary/20 focus:border-primary focus:outline-none tr"
+            />
+          </div>
+        ) : (
+          <div />
+        )}
+
+        {toolbar ? <div className="flex flex-wrap gap-2">{toolbar}</div> : null}
       </div>
 
       {/* resulst + overview */}
       <div>
         <Text variant="sm">
-          Showing <b>{total}</b> results from <b>100</b> items
+          Showing <b>{total}</b> results
         </Text>
         {/* <div className="flex items-center gap-2">
           <Button
@@ -317,34 +342,13 @@ export default function DataTable({
 
                     {isShowActions ? (
                       <TableCell className="w-12 px-4 text-center">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="rubix" size="sm" className="p-2">
-                              <MoreHorizontal className="h-5 w-5" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onSelect={() =>
-                                console.log("Action: view", rowId)
-                              }
-                            >
-                              View
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onSelect={() =>
-                                navigate(`/products/update/${rowId}`)
-                              }
-                            >
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onSelect={() => setIsDeleteDialogOpen(true)}
-                            >
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <ThreeDotMenu
+                          actions={
+                            typeof rowActions === "function"
+                              ? rowActions(row)
+                              : (rowActions ?? getDefaultRowActions(rowId))
+                          }
+                        />
                       </TableCell>
                     ) : null}
                   </TableRow>
@@ -356,59 +360,55 @@ export default function DataTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="flx gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Rows:</span>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  value={pageSize}
-                  onChange={(e) => {
-                    setPageSize(Number(e.target.value));
-                    setPage(1);
-                  }}
-                  className="pr-2 pl-3"
-                >
-                  <div className="flx gap-2">
-                    <span>10</span>
-                    <ChevronDown />
-                  </div>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {pageSizeOptions.map((n) => (
-                  <DropdownMenuItem
-                    key={n}
-                    value={n}
-                    onSelect={() => console.log("Action: view")}
-                  >
-                    {n}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <Dot className="text-gray-500" />
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div>
-              Page {page} of {pageCount}
+      {total > pageSize && (
+        <div className="flex items-center justify-between">
+          <div className="flx gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Rows:</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="pr-2 pl-3">
+                    <div className="flx gap-2">
+                      <span>{currentPageSize}</span>
+                      <ChevronDown />
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {pageSizeOptions.map((n) => (
+                    <DropdownMenuItem
+                      key={n}
+                      onSelect={() => {
+                        updatePageSize(n);
+                        updatePage(1);
+                      }}
+                    >
+                      {n}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <Dot className="text-gray-500" />
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div>
+                Page {currentPage} of {pageCount}
+              </div>
             </div>
           </div>
-        </div>
-        <Pagination
-          totalItems={data.length}
-          currentPage={page}
-          pageSize={pageSize}
-          onPageChange={(p) => setPage(p)}
-        />
+          <Pagination
+            totalItems={total}
+            currentPage={currentPage}
+            pageSize={currentPageSize}
+            onPageChange={(p) => updatePage(p)}
+          />
 
-        <DeleteDialog
-          isOpen={isDeleteDialogOpen}
-          setIsOpen={setIsDeleteDialogOpen}
-        />
-      </div>
+          <DeleteDialog
+            isOpen={isDeleteDialogOpen}
+            setIsOpen={setIsDeleteDialogOpen}
+          />
+        </div>
+      )}
     </div>
   );
 }

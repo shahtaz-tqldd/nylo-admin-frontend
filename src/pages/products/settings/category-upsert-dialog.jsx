@@ -8,14 +8,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useCreateCategoryMutation } from "@/features/products/productApiSlice";
+import {
+  useCreateCategoryMutation,
+  useUpdateCategoryMutation,
+} from "@/features/products/productApiSlice";
 import { FloatingInput } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-const CategoryUpsertDialog = ({ open, setOpen, categories }) => {
-  const [categoryName, setCategoryName] = useState("");
+const CategoryUpsertDialog = ({
+  open,
+  setOpen,
+  categories,
+  initialData = null,
+}) => {
+  const [categoryName, setCategoryName] = useState(initialData?.name ?? "");
   const [createCategory, { isLoading: isLoadingCreateCategory }] =
     useCreateCategoryMutation();
+  const [updateCategory, { isLoading: isLoadingUpdateCategory }] =
+    useUpdateCategoryMutation();
+  const isEditMode = Boolean(initialData?.id);
+  const isLoading = isLoadingCreateCategory || isLoadingUpdateCategory;
 
   const handleCreateCategory = async () => {
     const normalizedName = categoryName.trim();
@@ -25,21 +37,44 @@ const CategoryUpsertDialog = ({ open, setOpen, categories }) => {
     }
 
     try {
-      const res = await createCategory({ name: normalizedName }).unwrap();
+      const res = isEditMode
+        ? await updateCategory({
+            id: initialData.id,
+            body: { name: normalizedName },
+          }).unwrap()
+        : await createCategory({ name: normalizedName }).unwrap();
 
-      if (res.data.success) {
-        toast.success(res.data.message || "New category created!");
+      if (res?.data?.success || res?.success) {
+        toast.success(
+          res?.data?.message ||
+            res?.message ||
+            (isEditMode
+              ? "Category updated successfully!"
+              : "New category created!"),
+        );
+        setCategoryName("");
         setOpen(false);
       }
     } catch (error) {
-      toast.error(`Category creation failed: ${error}`);
+      toast.error(
+        `Category ${isEditMode ? "update" : "creation"} failed: ${
+          error?.data?.message || error?.message || "Unknown error"
+        }`,
+      );
     }
   };
+
+  React.useEffect(() => {
+    setCategoryName(initialData?.name ?? "");
+  }, [initialData, open]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Category</DialogTitle>
+          <DialogTitle>
+            {isEditMode ? "Update Category" : "Add New Category"}
+          </DialogTitle>
           <DialogDescription>
             Existing categories:{" "}
             {categories.length > 0
@@ -67,9 +102,13 @@ const CategoryUpsertDialog = ({ open, setOpen, categories }) => {
           <Button
             type="button"
             onClick={handleCreateCategory}
-            disabled={isLoadingCreateCategory}
+            disabled={isLoading}
           >
-            {isLoadingCreateCategory ? "Saving..." : "Save Category"}
+            {isLoading
+              ? "Saving..."
+              : isEditMode
+                ? "Update Category"
+                : "Save Category"}
           </Button>
         </DialogFooter>
       </DialogContent>

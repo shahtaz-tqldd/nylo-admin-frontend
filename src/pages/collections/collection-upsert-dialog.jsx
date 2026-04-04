@@ -8,23 +8,38 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { FloatingInput, Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-import { useCreateCollectionMutation } from "@/features/products/productApiSlice";
+import {
+  useCreateCollectionMutation,
+  useUpdateCollectionMutation,
+} from "@/features/products/productApiSlice";
 import { ImageUploadTile } from "@/components/image-upload/image-upload";
 import { canRevokePreview, createPreviewImage } from "@/lib/image-preview";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-const CollectionUpsertDialog = ({ open, setOpen }) => {
+const CollectionUpsertDialog = ({ open, setOpen, initialData = null }) => {
   const [newCollectionImage, setNewCollectionImage] = useState(null);
-  const [newCollectionTitle, setNewCollectionTitle] = useState("");
-  const [newCollectionSubtitle, setNewCollectionSubtitle] = useState("");
-  const [newCollectionType, setNewCollectionType] = useState("");
-  const [newCollectionDescription, setNewCollectionDescription] = useState("");
+  const [newCollectionTitle, setNewCollectionTitle] = useState(
+    initialData?.title ?? "",
+  );
+  const [newCollectionSubtitle, setNewCollectionSubtitle] = useState(
+    initialData?.subtitle ?? "",
+  );
+  const [newCollectionType, setNewCollectionType] = useState(
+    initialData?.type ?? "",
+  );
+  const [newCollectionDescription, setNewCollectionDescription] = useState(
+    initialData?.description ?? "",
+  );
 
   const [createCollection, { isLoading }] = useCreateCollectionMutation();
+  const [updateCollection, { isLoading: isLoadingUpdate }] =
+    useUpdateCollectionMutation();
+  const isEditMode = Boolean(initialData?.id);
+  const isSubmitting = isLoading || isLoadingUpdate;
   const replaceCollectionImage = (file) => {
     if (!file) {
       return;
@@ -72,9 +87,20 @@ const CollectionUpsertDialog = ({ open, setOpen }) => {
     }
 
     try {
-      const res = await createCollection(formData).unwrap();
-      if (res?.success) {
-        toast.success(res.message || "Collection created successfully!");
+      const res = isEditMode
+        ? await updateCollection({
+            id: initialData.id,
+            body: formData,
+          }).unwrap()
+        : await createCollection(formData).unwrap();
+      if (res?.success || res?.data?.success) {
+        toast.success(
+          res?.message ||
+            res?.data?.message ||
+            (isEditMode
+              ? "Collection updated successfully!"
+              : "Collection created successfully!"),
+        );
         setNewCollectionTitle("");
         setNewCollectionSubtitle("");
         setNewCollectionType("");
@@ -83,15 +109,36 @@ const CollectionUpsertDialog = ({ open, setOpen }) => {
         setOpen(false);
       }
     } catch (error) {
-      toast.error(`Collection creation failed: ${error}`);
+      toast.error(
+        `Collection ${isEditMode ? "update" : "creation"} failed: ${
+          error?.data?.message || error?.message || "Unknown error"
+        }`,
+      );
     }
   };
+
+  React.useEffect(() => {
+    setNewCollectionTitle(initialData?.title ?? "");
+    setNewCollectionSubtitle(initialData?.subtitle ?? "");
+    setNewCollectionType(initialData?.type ?? "");
+    setNewCollectionDescription(initialData?.description ?? "");
+    setNewCollectionImage(
+      initialData?.image_url
+        ? {
+            preview: initialData.image_url,
+            file: null,
+          }
+        : null,
+    );
+  }, [initialData, open]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add New Collection</DialogTitle>
+          <DialogTitle>
+            {isEditMode ? "Update Collection" : "Add New Collection"}
+          </DialogTitle>
           <DialogDescription>
             Collections use a title, optional details, and an uploaded image.
           </DialogDescription>
@@ -158,9 +205,13 @@ const CollectionUpsertDialog = ({ open, setOpen }) => {
           <Button
             type="button"
             onClick={handleCreateCollection}
-            disabled={isLoading}
+            disabled={isSubmitting}
           >
-            {isLoading ? "Saving..." : "Save Collection"}
+            {isSubmitting
+              ? "Saving..."
+              : isEditMode
+                ? "Update Collection"
+                : "Save Collection"}
           </Button>
         </DialogFooter>
       </DialogContent>

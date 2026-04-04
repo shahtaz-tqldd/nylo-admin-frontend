@@ -22,7 +22,15 @@ import {
   useProductSettingsQuery,
   useUpdateProductMutation,
 } from "@/features/products/productApiSlice";
-import { Download, Info, Package, Plus, Trash2, X } from "lucide-react";
+import {
+  Download,
+  Info,
+  Package,
+  Plus,
+  Settings2,
+  Trash2,
+  X,
+} from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -793,8 +801,9 @@ const UpsertProductPage = () => {
         </Button>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="mt-8">
-        <div className="mb-6 flex flex-wrap">
+      {/* tab */}
+      <div className="flex justify-between items-center mb-6 mt-8">
+        <div className="flex flex-wrap">
           <button
             type="button"
             className={tabClassName("basic")}
@@ -811,7 +820,17 @@ const UpsertProductPage = () => {
             Variants ({variants.length})
           </button>
         </div>
+        <Link to="/products/settings">
+          <Button variant="outline" className="pr-4 pl-3">
+            <div className="flx gap-1.5">
+              <Settings2 className="!h-4" />
+              Settings
+            </div>
+          </Button>
+        </Link>
+      </div>
 
+      <form onSubmit={handleSubmit(onSubmit)}>
         {activeTab === "basic" ? (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">

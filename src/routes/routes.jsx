@@ -10,13 +10,14 @@ import RolesAndPermissionPage from "../pages/roles-and-permissions";
 import StorePage from "../pages/store";
 import CouponPage from "../pages/coupons";
 import SettingsPage from "../pages/settings";
-import CollectionPage from "../pages/products/collection-page";
 import LoginPage from "../pages/auth/login";
 import RegisterPage from "../pages/auth/register";
 import ForgotPasswordPage from "../pages/auth/forgot-password";
 import ResetPasswordPage from "../pages/auth/reset-password";
 import PrivateRoute from "./private-route";
 import UpsertProductPage from "@/pages/products/upsert/upsert-product-page";
+import CollectionPage from "@/pages/collections";
+import ProductSettingsPage from "@/pages/products/settings";
 
 export const routes = createBrowserRouter([
   {
@@ -54,6 +55,10 @@ export const routes = createBrowserRouter([
       {
         path: "/products/collections",
         element: <CollectionPage />,
+      },
+      {
+        path: "/products/settings",
+        element: <ProductSettingsPage />,
       },
       {
         path: "/sales",
