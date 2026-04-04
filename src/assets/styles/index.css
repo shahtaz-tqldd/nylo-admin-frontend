@@ -138,3 +138,21 @@ button {
   background: linear-gradient(45deg, #004f3baf, #004f3baf);
   border-radius: 8px;
 }
+
+.custom-horizontal-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(from var(--primary) r g b / 30%) transparent;
+}
+
+.custom-horizontal-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.custom-horizontal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-horizontal-scrollbar::-webkit-scrollbar-thumb {
+  background: rgb(from var(--primary) r g b / 30%);
+  border-radius: 999px;
+}

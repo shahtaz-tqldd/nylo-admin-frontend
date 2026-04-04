@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Text, Title } from "@/components/ui/typography";
 import {
   useDeleteCategoryMutation,
-  useDeleteCollectionMutation,
+  useDeleteBrandMutation,
   useDeleteColorMutation,
   useDeleteSizeMutation,
   useProductSettingsQuery,
@@ -13,10 +13,10 @@ import { Plus } from "lucide-react";
 import moment from "moment";
 import React, { useMemo, useState } from "react";
 import CategoryUpsertDialog from "./category-upsert-dialog";
+import BrandUpsertDialog from "./brand-upsert-dialog";
 import SizeUpsertDialog from "./size-upsert-dialog";
 import ColorUpsertDialog from "./color-upsert-dialog";
 import toast from "react-hot-toast";
-import { SelectSeparator } from "@/components/ui/select";
 
 const getUserLabel = (user) => {
   if (!user) return "-";
@@ -104,6 +104,10 @@ const ProductSettingsPage = () => {
     open: false,
     item: null,
   });
+  const [brandDialog, setBrandDialog] = useState({
+    open: false,
+    item: null,
+  });
   const [colorDialog, setColorDialog] = useState({
     open: false,
     item: null,
@@ -120,13 +124,14 @@ const ProductSettingsPage = () => {
     () => settings.categories ?? [],
     [settings.categories],
   );
+  const brands = useMemo(() => settings.brands ?? [], [settings.brands]);
   const sizes = useMemo(() => settings.sizes ?? [], [settings.sizes]);
   const colors = useMemo(() => settings.colors ?? [], [settings.colors]);
 
   const [deleteCategory] = useDeleteCategoryMutation();
+  const [deleteBrand] = useDeleteBrandMutation();
   const [deleteSize] = useDeleteSizeMutation();
   const [deleteColor] = useDeleteColorMutation();
-  const [deleteCollection] = useDeleteCollectionMutation();
 
   const mapSettingRows = (items, mapper) =>
     items.map((item) => ({
@@ -149,6 +154,10 @@ const ProductSettingsPage = () => {
     () => mapSettingRows(sizes, (item) => ({ name: item.name })),
     [sizes],
   );
+  const brandRows = useMemo(
+    () => mapSettingRows(brands, (item) => ({ name: item.name })),
+    [brands],
+  );
   const colorRows = useMemo(
     () =>
       mapSettingRows(colors, (item) => ({
@@ -170,6 +179,7 @@ const ProductSettingsPage = () => {
 
   const categoryColumns = buildBaseColumns("Category");
   const sizeColumns = buildBaseColumns("Size");
+  const brandColumns = buildBaseColumns("Brand");
   const colorColumns = buildBaseColumns("Color");
 
   const openDeleteDialog = (type, item) => {
@@ -188,12 +198,12 @@ const ProductSettingsPage = () => {
     try {
       if (deleteState.type === "category") {
         await deleteCategory(deleteState.item.id).unwrap();
+      } else if (deleteState.type === "brand") {
+        await deleteBrand(deleteState.item.id).unwrap();
       } else if (deleteState.type === "size") {
         await deleteSize(deleteState.item.id).unwrap();
       } else if (deleteState.type === "color") {
         await deleteColor(deleteState.item.id).unwrap();
-      } else if (deleteState.type === "collection") {
-        await deleteCollection(deleteState.item.id).unwrap();
       }
 
       toast.success(
@@ -232,22 +242,36 @@ const ProductSettingsPage = () => {
         </Text>
       </div>
 
-      <div className="mt-8">
-        <SettingsSection
-          title="Categories"
-          description="Manage product category options and audit details."
-          actionLabel="New Category"
-          onCreate={() => setCategoryDialog({ open: true, item: null })}
-          data={categoryRows}
-          columns={categoryColumns}
-          rowActions={getRowActions("category", (item) =>
-            setCategoryDialog({ open: true, item }),
-          )}
-          isLoading={isLoading}
-          total={categoryRows?.length || 0}
-        />
-
+      <div className="mt-8 space-y-10">
         <div className="grid grid-cols-2 gap-8 mt-10">
+          <SettingsSection
+            title="Categories"
+            description="Manage product category options and audit details."
+            actionLabel="New Category"
+            onCreate={() => setCategoryDialog({ open: true, item: null })}
+            data={categoryRows}
+            columns={categoryColumns}
+            rowActions={getRowActions("category", (item) =>
+              setCategoryDialog({ open: true, item }),
+            )}
+            isLoading={isLoading}
+            total={categoryRows?.length || 0}
+          />
+          <SettingsSection
+            title="Brands"
+            description="Manage available brands and audit details."
+            actionLabel="New Brand"
+            onCreate={() => setBrandDialog({ open: true, item: null })}
+            data={brandRows}
+            columns={brandColumns}
+            rowActions={getRowActions("brand", (item) =>
+              setBrandDialog({ open: true, item }),
+            )}
+            isLoading={isLoading}
+            total={brandRows?.length || 0}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-8">
           <SettingsSection
             title="Sizes"
             description="Manage available product sizes and track updates."
@@ -302,6 +326,19 @@ const ProductSettingsPage = () => {
         }
         sizes={sizes}
         initialData={sizeDialog.item}
+      />
+
+      <BrandUpsertDialog
+        open={brandDialog.open}
+        setOpen={(open) =>
+          setBrandDialog((prev) => ({
+            ...prev,
+            open,
+            item: open ? prev.item : null,
+          }))
+        }
+        brands={brands}
+        initialData={brandDialog.item}
       />
 
       <ColorUpsertDialog

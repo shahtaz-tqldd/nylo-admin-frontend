@@ -233,8 +233,9 @@ export default function DataTable({
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-gray-200 overflow-hidden !bg-white">
-        <Table>
+      <div className="rounded-lg border border-gray-200 !bg-white">
+        <div className="custom-horizontal-scrollbar overflow-x-auto overflow-y-hidden">
+          <Table>
           <TableHeader>
             <TableRow className="!bg-primary/10 !text-primary">
               {isShowCheckbox && (
@@ -356,7 +357,8 @@ export default function DataTable({
               })
             )}
           </TableBody>
-        </Table>
+          </Table>
+        </div>
       </div>
 
       {/* Pagination */}

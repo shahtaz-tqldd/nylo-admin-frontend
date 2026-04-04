@@ -109,6 +109,33 @@ export const productApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["productSettings"],
     }),
 
+    // brand
+    createBrand: builder.mutation({
+      query: (body) => ({
+        url: "/products/admin/brand/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["productSettings"],
+    }),
+
+    updateBrand: builder.mutation({
+      query: ({ id, body }) => ({
+        url: `/products/admin/brand/${id}/`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["productSettings"],
+    }),
+
+    deleteBrand: builder.mutation({
+      query: (id) => ({
+        url: `/products/admin/brand/${id}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["productSettings"],
+    }),
+
     // size
     createSize: builder.mutation({
       query: (body) => ({
@@ -218,6 +245,9 @@ export const {
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+  useCreateBrandMutation,
+  useUpdateBrandMutation,
+  useDeleteBrandMutation,
   useCreateSizeMutation,
   useUpdateSizeMutation,
   useDeleteSizeMutation,
