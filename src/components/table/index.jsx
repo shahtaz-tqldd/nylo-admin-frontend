@@ -26,6 +26,7 @@ import Pagination from "../pagination";
 import { cn } from "@/lib/utils";
 import { Text } from "../ui/typography";
 import DeleteDialog from "../dialog/delete-dialog";
+import { useNavigate } from "react-router-dom";
 
 function defaultGetRowId(row, idx) {
   if (row.id !== undefined) return row.id;
@@ -37,7 +38,6 @@ export default function DataTable({
   data,
   columns,
   pageSizeOptions = [10, 25, 50],
-  defaultPageSize = 10,
   selectedIds: controlledSelectedIds,
   onSelectionChange,
   getRowId = defaultGetRowId,
@@ -45,14 +45,20 @@ export default function DataTable({
   isShowCheckbox = false,
   isShowActions = false,
   className = "",
+  isLoading = false,
+  page,
+  setPage,
+  pageSize,
+  setPageSize,
 }) {
   const [query, setQuery] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(defaultPageSize);
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("asc");
   const [selected, setSelected] = useState(new Set());
+  const skeletonRows = Array.from({ length: pageSize }, (_, idx) => idx);
+  const tableColumnCount =
+    columns.length + (isShowCheckbox ? 1 : 0) + (isShowActions ? 1 : 0);
 
   // If parent controls selection, derive from prop
   const selection = controlledSelectedIds ?? selected;
@@ -131,6 +137,8 @@ export default function DataTable({
     }
     setPage(1);
   };
+
+  const navigate = useNavigate();
 
   return (
     <div className={cn("w-full space-y-4", className)}>
@@ -242,9 +250,36 @@ export default function DataTable({
           </TableHeader>
 
           <TableBody>
-            {current.length === 0 ? (
+            {isLoading ? (
+              skeletonRows.map((rowIdx) => (
+                <TableRow key={`skeleton-row-${rowIdx}`}>
+                  {isShowCheckbox && (
+                    <TableCell className="w-12 px-4">
+                      <div className="h-4 w-4 animate-pulse rounded bg-gray-200" />
+                    </TableCell>
+                  )}
+
+                  {columns.map((col) => (
+                    <TableCell
+                      key={`skeleton-cell-${rowIdx}-${String(col.key)}`}
+                      className={`py-4 px-4 ${
+                        col.width ? String(col.width) : ""
+                      }`}
+                    >
+                      <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
+                    </TableCell>
+                  ))}
+
+                  {isShowActions ? (
+                    <TableCell className="w-12 px-4 text-center">
+                      <div className="ml-auto h-8 w-8 animate-pulse rounded-md bg-gray-200" />
+                    </TableCell>
+                  ) : null}
+                </TableRow>
+              ))
+            ) : current.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length + (isShowActions ? 2 : 1)}>
+                <TableCell colSpan={tableColumnCount}>
                   <div className="py-8 text-center text-sm text-muted-foreground">
                     {emptyState ?? "No results."}
                   </div>
@@ -275,8 +310,8 @@ export default function DataTable({
                         {col.render
                           ? col.render(row)
                           : col.accessor
-                          ? col.accessor(row)
-                          : row[col.key]}
+                            ? col.accessor(row)
+                            : row[col.key]}
                       </TableCell>
                     ))}
 
@@ -289,7 +324,6 @@ export default function DataTable({
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            {/* Example default actions; consumer can ignore and render their own via renderRowActions */}
                             <DropdownMenuItem
                               onSelect={() =>
                                 console.log("Action: view", rowId)
@@ -299,7 +333,7 @@ export default function DataTable({
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onSelect={() =>
-                                console.log("Action: edit", rowId)
+                                navigate(`/products/update/${rowId}`)
                               }
                             >
                               Edit

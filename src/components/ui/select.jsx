@@ -22,6 +22,59 @@ function SelectValue({
   return <SelectPrimitive.Value data-slot="select-value" {...props} />;
 }
 
+function FloatingSelect({
+  label,
+  placeholder,
+  value,
+  onValueChange,
+  disabled,
+  className,
+  triggerClassName,
+  contentClassName,
+  children,
+  ...props
+}) {
+  const [open, setOpen] = React.useState(false);
+  const hasValue =
+    value !== undefined && value !== null && value !== "";
+
+  return (
+    <div className={cn("w-full", className)}>
+      <div className="relative">
+        <Select
+          value={value}
+          onValueChange={onValueChange}
+          open={open}
+          onOpenChange={setOpen}
+          disabled={disabled}
+          {...props}
+        >
+          <SelectTrigger
+            className={cn(
+              "!h-auto min-h-[50px] w-full rounded-xl border border-slate-300 bg-white px-4 pt-5 pb-3 text-left text-sm text-slate-900 focus:border-primary focus:ring-4 focus:ring-primary/10",
+              triggerClassName,
+            )}
+          >
+            <SelectValue placeholder={placeholder} />
+          </SelectTrigger>
+          <SelectContent className={contentClassName}>{children}</SelectContent>
+        </Select>
+
+        <label
+          className={cn(
+            "pointer-events-none absolute left-4 z-10 origin-[0] bg-white px-1 py-1 text-sm text-slate-500 transition-all duration-200",
+            hasValue || open
+              ? "top-0 -translate-y-1/2 scale-90 text-primary"
+              : "top-1/2 -translate-y-1/2 scale-100",
+          )}
+        >
+          {label}
+        </label>
+      </div>
+    </div>
+  );
+}
+
 function SelectTrigger({
   className,
   size = "default",
@@ -153,6 +206,7 @@ function SelectScrollDownButton({
 }
 
 export {
+  FloatingSelect,
   Select,
   SelectContent,
   SelectGroup,

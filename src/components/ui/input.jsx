@@ -23,11 +23,16 @@ function FloatingInput({
   label,
   type = "text",
   error,
+  autoComplete = "off",
+  className,
+  inputClassName,
+  placeholder = " ",
+  prefix,
   value,
   onChange,
   onBlur,
   name,
-  autoComplete = "off",
+  ...props
 }) {
   const [showPassword, setShowPassword] = React.useState(false);
 
@@ -35,8 +40,13 @@ function FloatingInput({
   const inputType = isPassword ? (showPassword ? "text" : "password") : type;
 
   return (
-    <div className="w-full">
+    <div className={cn("w-full", className)}>
       <div className="relative">
+        {prefix && (
+          <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-sm text-slate-500">
+            {prefix}
+          </span>
+        )}
         <input
           id={name}
           name={name}
@@ -45,20 +55,25 @@ function FloatingInput({
           onChange={onChange}
           onBlur={onBlur}
           autoComplete={autoComplete}
-          placeholder=" "
-          className={`peer w-full rounded-xl border bg-white px-4 pt-5 pb-3 text-sm text-slate-900 outline-none transition-all duration-200
+          placeholder={placeholder}
+          className={cn(
+            `peer w-full rounded-xl border bg-white px-4 pt-5 pb-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-transparent focus:placeholder:text-slate-400
             ${
               error
                 ? "border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-100"
                 : "border-slate-300 focus:border-primary focus:ring-4 focus:ring-primary/10"
             }
             ${isPassword ? "pr-12" : ""}
-          `}
+            ${prefix ? "pl-8" : ""}`,
+            inputClassName,
+          )}
+          {...props}
         />
 
         <label
           htmlFor={name}
-          className={`
+          className={cn(
+            `
     absolute left-4 top-0 z-10 origin-[0] bg-white px-1 py-1 text-sm text-slate-500 pointer-events-none
     transform transition-all duration-200
 
@@ -72,7 +87,9 @@ function FloatingInput({
     peer-focus:-translate-y-1/2
     peer-focus:scale-90
     peer-focus:text-primary
-  `}
+  `,
+            prefix && "left-8",
+          )}
         >
           {label}
         </label>
@@ -92,4 +109,23 @@ function FloatingInput({
   );
 }
 
-export { Input, FloatingInput };
+function Field({ label, placeholder, register }) {
+  return (
+    <FloatingInput label={label} placeholder={placeholder} {...register} />
+  );
+}
+
+function PriceField({ label, placeholder, register }) {
+  return (
+    <FloatingInput
+      label={label}
+      type="number"
+      step="0.01"
+      prefix="$"
+      placeholder={placeholder}
+      {...register}
+    />
+  );
+}
+
+export { Input, FloatingInput, Field, PriceField };

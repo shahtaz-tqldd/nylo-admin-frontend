@@ -1,12 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import DataTable from "@/components/table";
 import { Text, Title } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import { Layers, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useProductListQuery } from "@/features/products/productApiSlice";
+import moment from "moment";
 
 const ProductPage = () => {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const { data, isLoading } = useProductListQuery();
   const PLACEHOLDER_IAMGE =
     "https://images.unsplash.com/photo-1529810313688-44ea1c2d81d3?q=80&w=100";
@@ -27,10 +30,10 @@ const ProductPage = () => {
       ),
       price: `$${item.price}`,
       category: item.category_name,
-      stock: item?.stock,
-      created_at: new Date(item.created_at).toLocaleDateString(),
-      order_count: item?.order_count,
-      status: item?.status,
+      stock: item?.total_stock,
+      created_at: moment(item.created_at).format("MMM DD, YYYY"),
+      order_count: item?.total_order_palced,
+      status: item?.is_active ? "Active" : "Inactive",
     })) || [];
 
   const productColumns = [
@@ -80,6 +83,11 @@ const ProductPage = () => {
         className="mt-8"
         isShowActions
         isShowCheckbox
+        isLoading={isLoading}
+        page={page}
+        setPage={setPage}
+        pageSize={pageSize}
+        setPageSize={setPageSize}
       />
     </div>
   );

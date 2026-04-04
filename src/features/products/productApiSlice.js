@@ -5,15 +5,30 @@ export const productApiSlice = apiSlice.injectEndpoints({
     // products
     createProduct: builder.mutation({
       query: (body) => ({
-        url: "/products/admin/product/",
+        url: "/products/admin/",
         method: "POST",
         body,
       }),
     }),
 
+    updateProduct: builder.mutation({
+      query: ({ payload, productId }) => ({
+        url: `/products/admin/${productId}/`,
+        method: "PATCH",
+        body: payload,
+      }),
+    }),
+
     productList: builder.query({
       query: (query) => ({
-        url: "/products/list/",
+        url: "/products/admin/list/",
+        method: "GET",
+      }),
+    }),
+
+    productDetails: builder.query({
+      query: (productId) => ({
+        url: `/products/admin/${productId}`,
         method: "GET",
       }),
     }),
@@ -72,6 +87,8 @@ export const productApiSlice = apiSlice.injectEndpoints({
 export const {
   useProductListQuery,
   useCreateProductMutation,
+  useUpdateProductMutation,
+  useProductDetailsQuery,
 
   useCreateCategoryMutation,
   useCreateSizeMutation,

@@ -18,7 +18,7 @@ const CustomerPage = () => {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
 
-  const { data } = useCustomerListQuery({
+  const { data, isLoading } = useCustomerListQuery({
     page,
     page_size: pageSize,
     search_str: search,
@@ -66,10 +66,15 @@ const CustomerPage = () => {
       </div>
 
       <DataTable
+        className="mt-8"
         data={customers}
         columns={customerColumns}
         defaultPageSize={10}
-        className="mt-8"
+        page={page}
+        setPage={setPage}
+        pageSize={pageSize}
+        setPageSize={setPageSize}
+        isLoading={isLoading}
         isShowActions
         isShowCheckbox
       />

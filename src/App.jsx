@@ -3,6 +3,7 @@ import { routes } from "./routes/routes";
 import "@/assets/styles/index.css";
 import "@/assets/styles/layout.css";
 import useAuth from "./hooks/useAuth";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const { isLoading, authChecked } = useAuth();
@@ -16,7 +17,12 @@ function App() {
       </div>
     );
   }
-  return <RouterProvider router={routes} />;
+  return (
+    <>
+      <RouterProvider router={routes} />
+      <Toaster />
+    </>
+  );
 }
 
 export default App;
