@@ -1407,7 +1407,7 @@ const UpsertProductPage = () => {
           </div>
         )}
 
-        <div className="-mx-8 sticky bottom-0 mt-8 translate-y-8 border-t bg-white py-5">
+        <div className="-mx-8 sticky bottom-0 translate-y-8 border-t bg-white py-5 z-10">
           <div className="container flbx">
             <Link to="/products">
               <Button variant="outline">Cancel</Button>

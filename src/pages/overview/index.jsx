@@ -7,7 +7,7 @@ const Overview = () => {
       {/* Page Title */}
       <div className="space-y-2">
         <h2 className="text-xl">Hello, Shahtaz Rahman</h2>
-        <h2 className="text-3xl">Welcome to the Lace Up Admin</h2>
+        <h2 className="text-3xl">Welcome to Nylo Overview</h2>
       </div>
 
       <div className="grid grid-cols-3 gap-6">
