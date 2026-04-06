@@ -1,18 +1,72 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import toast from "react-hot-toast";
 
 // components
 import { Button } from "@/components/ui/button";
-import { Text, Title } from "@/components/ui/typography";
 import CollectionUpsertDialog from "./collection-upsert-dialog";
+import CollectionDetailsDrawer from "./collection-details-drawer";
+import { CollectionCard, CollectionCardSkeleton } from "./collection-card";
+import DeleteDialog from "@/components/dialog/delete-dialog";
+import { Text, Title } from "@/components/ui/typography";
 
 // icons
 import { Plus } from "lucide-react";
 
-import { useCollectionListQuery } from "@/features/products/productApiSlice";
+// services
+import {
+  useCollectionListQuery,
+  useDeleteCollectionMutation,
+} from "@/features/products/productApiSlice";
 
 const CollectionPage = () => {
-  const [isCollectionOpen, setIsCollectionOpen] = useState(false);
+  const [collectionDialogState, setCollectionDialogState] = useState({
+    open: false,
+    item: null,
+  });
+  const [selectedCollection, setSelectedCollection] = useState(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const { data, isLoading } = useCollectionListQuery();
+  const [deleteCollection, { isLoading: isDeleting }] =
+    useDeleteCollectionMutation();
+
+  const collections = useMemo(() => data?.data ?? [], [data?.data]);
+
+  const openCreateDialog = () => {
+    setCollectionDialogState({ open: true, item: null });
+  };
+
+  const openUpdateDialog = (collection) => {
+    setCollectionDialogState({ open: true, item: collection });
+  };
+
+  const openViewDrawer = (collection) => {
+    setSelectedCollection(collection);
+    setIsViewOpen(true);
+  };
+
+  const openDeleteDialog = (collection) => {
+    setSelectedCollection(collection);
+    setIsDeleteOpen(true);
+  };
+
+  const handleDeleteCollection = async () => {
+    if (!selectedCollection?.id) {
+      return;
+    }
+
+    try {
+      const response = await deleteCollection(selectedCollection.id).unwrap();
+      toast.success(response?.message || "Collection deleted successfully.");
+      setSelectedCollection(null);
+    } catch (error) {
+      toast.error(
+        error?.data?.message || error?.message || "Collection delete failed.",
+      );
+      throw error;
+    }
+  };
+
   return (
     <div>
       {/* Header */}
@@ -26,7 +80,7 @@ const CollectionPage = () => {
           </Text>
         </div>
 
-        <Button className="pr-5 pl-3" onClick={() => setIsCollectionOpen(true)}>
+        <Button className="pr-5 pl-3" onClick={openCreateDialog}>
           <div className="flx gap-1.5">
             <Plus className="!h-4" />
             New Collection
@@ -35,56 +89,52 @@ const CollectionPage = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-        {data?.data?.map((col) => (
-          <CollectionCard key={col.id} {...col} />
-        ))}
+        {isLoading
+          ? Array.from({ length: 6 }).map((_, index) => (
+              <CollectionCardSkeleton key={index} />
+            ))
+          : collections.map((collection) => (
+              <CollectionCard
+                key={collection.id}
+                {...collection}
+                onView={() => openViewDrawer(collection)}
+                onUpdate={() => openUpdateDialog(collection)}
+                onDelete={() => openDeleteDialog(collection)}
+              />
+            ))}
       </div>
 
       <CollectionUpsertDialog
-        open={isCollectionOpen}
-        setOpen={setIsCollectionOpen}
+        open={collectionDialogState.open}
+        setOpen={(open) =>
+          setCollectionDialogState((prev) => ({
+            ...prev,
+            open,
+            item: open ? prev.item : null,
+          }))
+        }
+        initialData={collectionDialogState.item}
+      />
+
+      <CollectionDetailsDrawer
+        open={isViewOpen}
+        setOpen={setIsViewOpen}
+        collection={selectedCollection}
+      />
+
+      <DeleteDialog
+        isOpen={isDeleteOpen}
+        setIsOpen={(open) => {
+          setIsDeleteOpen(open);
+          if (!open) {
+            setSelectedCollection(null);
+          }
+        }}
+        onConfirm={handleDeleteCollection}
+        isLoading={isDeleting}
       />
     </div>
   );
 };
 
 export default CollectionPage;
-
-export const CollectionCard = ({
-  image_url,
-  title,
-  description,
-  productCount,
-  type,
-}) => {
-  const FALLBACK_IMAGE =
-    "https://cdn.thewirecutter.com/wp-content/media/2025/06/BG-RUNNING-SHOES-8262-2x1-1.jpg?width=2048&quality=75&crop=2:1&auto=webp";
-  return (
-    <div className="rounded-2xl overflow-hidden border bg-white shadow-sm hover:shadow-md transition-all cursor-pointer">
-      {/* Image */}
-      <div className="h-48 w-full overflow-hidden">
-        <img
-          src={image_url || FALLBACK_IMAGE}
-          alt={title}
-          className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-        />
-      </div>
-
-      {/* Details */}
-      <div className="p-4 space-y-1.5">
-        <div className="flex justify-between items-center">
-          <h3 className="font-semibold text-gray-900 text-lg">{title}</h3>
-          <span className="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 font-medium">
-            {type}
-          </span>
-        </div>
-
-        <p className="text-gray-500 text-sm">{description}</p>
-
-        <p className="text-gray-700 text-sm font-medium mt-2">
-          {productCount} products
-        </p>
-      </div>
-    </div>
-  );
-};

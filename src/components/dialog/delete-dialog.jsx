@@ -15,6 +15,11 @@ const DeleteDialog = ({
   onConfirm = () => {},
   isLoading = false,
 }) => {
+  const handleConfirm = async () => {
+    await onConfirm();
+    setIsOpen(false);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent>
@@ -33,10 +38,7 @@ const DeleteDialog = ({
           <Button
             variant="destructive"
             disabled={isLoading}
-            onClick={() => {
-              onConfirm();
-              setIsOpen(false);
-            }}
+            onClick={handleConfirm}
           >
             {isLoading ? "Deleting..." : "Delete"}
           </Button>

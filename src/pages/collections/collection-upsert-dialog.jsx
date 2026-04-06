@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
+
+// components
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,17 +11,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { FloatingInput } from "@/components/ui/input";
+import { FloatingTextarea } from "@/components/ui/textarea";
+import { ImageUploadTile } from "@/components/image-upload/image-upload";
 
+// services
 import {
   useCreateCollectionMutation,
   useUpdateCollectionMutation,
 } from "@/features/products/productApiSlice";
-import { ImageUploadTile } from "@/components/image-upload/image-upload";
 import { canRevokePreview, createPreviewImage } from "@/lib/image-preview";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 
 const CollectionUpsertDialog = ({ open, setOpen, initialData = null }) => {
   const [newCollectionImage, setNewCollectionImage] = useState(null);
@@ -146,44 +148,39 @@ const CollectionUpsertDialog = ({ open, setOpen, initialData = null }) => {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-2">
-            <Label>Title</Label>
-            <Input
+            <FloatingInput
+              label="Title"
               value={newCollectionTitle}
               onChange={(e) => setNewCollectionTitle(e.target.value)}
-              placeholder="e.g., Summer 2026"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Subtitle</Label>
-            <Input
+            <FloatingInput
+              label="Subtitle"
               value={newCollectionSubtitle}
               onChange={(e) => setNewCollectionSubtitle(e.target.value)}
-              placeholder="Optional subtitle"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Type</Label>
-            <Input
+            <FloatingInput
+              label="Type"
               value={newCollectionType}
               onChange={(e) => setNewCollectionType(e.target.value)}
-              placeholder="Optional type"
             />
           </div>
 
           <div className="space-y-2 sm:col-span-2">
-            <Label>Description</Label>
-            <Textarea
-              rows={4}
+            <FloatingTextarea
+              label="Description"
+              rows={3}
               value={newCollectionDescription}
               onChange={(e) => setNewCollectionDescription(e.target.value)}
-              placeholder="Optional description"
             />
           </div>
 
           <div className="space-y-2 sm:col-span-2">
-            <Label>Image</Label>
             <ImageUploadTile
               id="collection-image-upload"
               image={newCollectionImage}

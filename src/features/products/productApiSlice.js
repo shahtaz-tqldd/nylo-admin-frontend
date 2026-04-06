@@ -222,6 +222,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
         url: "/products/admin/collection/list/",
         method: "GET",
       }),
+      providesTags: ["productSettings"],
     }),
 
     // product create settings
