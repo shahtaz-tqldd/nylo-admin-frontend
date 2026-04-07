@@ -34,8 +34,8 @@ const buildProductListUrl = ({
 
   const queryString = params.toString();
   return queryString
-    ? `/products/admin/list/?${queryString}`
-    : "/products/admin/list/";
+    ? `/admin/products/list/?${queryString}`
+    : "/admin/products/list/";
 };
 
 export const productApiSlice = apiSlice.injectEndpoints({
@@ -43,7 +43,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
     // products
     createProduct: builder.mutation({
       query: (body) => ({
-        url: "/products/admin/",
+        url: "/admin/products/create/",
         method: "POST",
         body,
       }),
@@ -52,7 +52,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
 
     updateProduct: builder.mutation({
       query: ({ payload, productId }) => ({
-        url: `/products/admin/${productId}/`,
+        url: `/admin/products/update/${productId}/`,
         method: "PATCH",
         body: payload,
       }),
@@ -69,14 +69,14 @@ export const productApiSlice = apiSlice.injectEndpoints({
 
     productDetails: builder.query({
       query: (productId) => ({
-        url: `/products/admin/${productId}/`,
+        url: `/admin/products/${productId}/`,
         method: "GET",
       }),
     }),
 
     deleteProduct: builder.mutation({
       query: (productId) => ({
-        url: `/products/admin/${productId}/`,
+        url: `/admin/products/${productId}/`,
         method: "DELETE",
       }),
       invalidatesTags: ["products"],
@@ -85,7 +85,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
     // category
     createCategory: builder.mutation({
       query: (body) => ({
-        url: "/products/admin/category/",
+        url: "/admin/products/category/create/",
         method: "POST",
         body,
       }),
@@ -94,7 +94,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
 
     updateCategory: builder.mutation({
       query: ({ id, body }) => ({
-        url: `/products/admin/category/${id}/`,
+        url: `/admin/products/category/update/${id}/`,
         method: "PATCH",
         body,
       }),
@@ -103,7 +103,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
 
     deleteCategory: builder.mutation({
       query: (id) => ({
-        url: `/products/admin/category/${id}/`,
+        url: `/admin/products/category/delete/${id}/`,
         method: "DELETE",
       }),
       invalidatesTags: ["productSettings"],
@@ -112,7 +112,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
     // brand
     createBrand: builder.mutation({
       query: (body) => ({
-        url: "/products/admin/brand/",
+        url: "/admin/products/brand/create/",
         method: "POST",
         body,
       }),
@@ -121,7 +121,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
 
     updateBrand: builder.mutation({
       query: ({ id, body }) => ({
-        url: `/products/admin/brand/${id}/`,
+        url: `/admin/products/brand/update/${id}/`,
         method: "PATCH",
         body,
       }),
@@ -130,7 +130,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
 
     deleteBrand: builder.mutation({
       query: (id) => ({
-        url: `/products/admin/brand/${id}/`,
+        url: `/admin/products/brand/delete/${id}/`,
         method: "DELETE",
       }),
       invalidatesTags: ["productSettings"],
@@ -139,7 +139,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
     // size
     createSize: builder.mutation({
       query: (body) => ({
-        url: "/products/admin/size/",
+        url: "/admin/products/size/create/",
         method: "POST",
         body,
       }),
@@ -148,7 +148,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
 
     updateSize: builder.mutation({
       query: ({ id, body }) => ({
-        url: `/products/admin/size/${id}/`,
+        url: `/admin/products/size/update/${id}/`,
         method: "PATCH",
         body,
       }),
@@ -157,7 +157,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
 
     deleteSize: builder.mutation({
       query: (id) => ({
-        url: `/products/admin/size/${id}/`,
+        url: `/admin/products/size/delete/${id}/`,
         method: "DELETE",
       }),
       invalidatesTags: ["productSettings"],
@@ -166,7 +166,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
     // color
     createColor: builder.mutation({
       query: (body) => ({
-        url: "/products/admin/color/",
+        url: "/admin/products/color/create/",
         method: "POST",
         body,
       }),
@@ -175,7 +175,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
 
     updateColor: builder.mutation({
       query: ({ id, body }) => ({
-        url: `/products/admin/color/${id}/`,
+        url: `/admin/products/color/update/${id}/`,
         method: "PATCH",
         body,
       }),
@@ -184,7 +184,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
 
     deleteColor: builder.mutation({
       query: (id) => ({
-        url: `/products/admin/color/${id}/`,
+        url: `/admin/products/color/delete/${id}/`,
         method: "DELETE",
       }),
       invalidatesTags: ["productSettings"],
@@ -193,7 +193,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
     // collection
     createCollection: builder.mutation({
       query: (body) => ({
-        url: "/products/admin/collection/",
+        url: "/admin/products/collection/create/",
         method: "POST",
         body,
       }),
@@ -202,7 +202,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
 
     updateCollection: builder.mutation({
       query: ({ id, body }) => ({
-        url: `/products/admin/collection/${id}/`,
+        url: `/admin/products/collection/update/${id}/`,
         method: "PATCH",
         body,
       }),
@@ -211,7 +211,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
 
     deleteCollection: builder.mutation({
       query: (id) => ({
-        url: `/products/admin/collection/${id}/`,
+        url: `/admin/products/collection/delete/${id}/`,
         method: "DELETE",
       }),
       invalidatesTags: ["productSettings"],
@@ -219,7 +219,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
 
     collectionList: builder.query({
       query: () => ({
-        url: "/products/admin/collection/list/",
+        url: "/admin/products/collection/list/",
         method: "GET",
       }),
       providesTags: ["productSettings"],
@@ -228,7 +228,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
     // product create settings
     productSettings: builder.query({
       query: () => ({
-        url: "/products/settings/",
+        url: "/admin/products/settings/",
         method: "GET",
       }),
       providesTags: ["productSettings"],

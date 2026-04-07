@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-  MessageSquare,
-  User,
-  Package,
-  ShoppingCart,
-  Clock,
-  Search,
-} from "lucide-react";
+import { MessageSquare, User, Package, Search } from "lucide-react";
 
 const MessagesPage = () => {
   const [selectedSession, setSelectedSession] = useState(null);
@@ -323,7 +316,7 @@ const MessagesPage = () => {
                           </p>
                         </div>
                       </div>
-                    )
+                    ),
                   )}
                 </div>
               </div>

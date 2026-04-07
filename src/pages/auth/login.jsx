@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ import { userLoggedIn } from "@/features/auth/authSlice";
 
 const LoginPage = () => {
   const [login, { isLoading }] = useLoginMutation();
+  const [error, setError] = useState("");
+  const [errorAnimationKey, setErrorAnimationKey] = useState(0);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -45,9 +47,12 @@ const LoginPage = () => {
           res.data.refresh_token,
           data.rememberMe,
         );
+        setError("");
       }
     } catch (error) {
       console.error("Login failed:", error);
+      setError(error?.data?.error[0] || "Failed to connect with server!");
+      setErrorAnimationKey((current) => current + 1);
     }
   };
 
@@ -90,6 +95,14 @@ const LoginPage = () => {
                   Sign in to access your shoe store dashboard.
                 </p>
               </div>
+              {error && (
+                <div
+                  key={errorAnimationKey}
+                  className="error-bounce mb-6 -mt-6 rounded-lg border border-red-200 bg-red-100 p-2 text-center text-xs"
+                >
+                  <span className="text-red-500">{error}</span>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 <Controller

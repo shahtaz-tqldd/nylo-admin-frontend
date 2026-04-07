@@ -59,10 +59,6 @@ const CustomerPage = () => {
             High-level summary of customers and their analytics
           </Text>
         </div>
-        <Button className="flex">
-          <Plus />
-          Customer
-        </Button>
       </div>
 
       <DataTable
