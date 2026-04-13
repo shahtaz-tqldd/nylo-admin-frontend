@@ -5,7 +5,6 @@ export const CollectionCard = ({
   image_url,
   title,
   subtitle,
-  description,
   productCount,
   product_count,
   type,
@@ -20,7 +19,7 @@ export const CollectionCard = ({
   return (
     <div className="rounded-2xl overflow-hidden border bg-white shadow-sm hover:shadow-md transition-all">
       {/* Image */}
-      <div className="relative h-48 w-full overflow-hidden">
+      <div className="relative h-120 w-full overflow-hidden">
         <img
           src={image_url || FALLBACK_IMAGE}
           alt={title || `Collection ${id}`}
@@ -62,9 +61,6 @@ export const CollectionCard = ({
         {subtitle ? (
           <p className="text-sm font-medium text-gray-700">{subtitle}</p>
         ) : null}
-        <p className="text-gray-500 text-sm">
-          {description || "No description provided."}
-        </p>
 
         <p className="text-gray-700 text-sm font-medium mt-2">
           {totalProducts} products

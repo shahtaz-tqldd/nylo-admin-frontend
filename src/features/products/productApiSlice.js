@@ -29,7 +29,9 @@ const buildProductListUrl = ({
     ["brand", brand],
     ["collection", collection],
   ].forEach(([key, values]) => {
-    values.filter(Boolean).forEach((value) => params.append(key, value));
+    values
+      .filter(Boolean)
+      .forEach((value) => params.append("collection_id", value));
   });
 
   const queryString = params.toString();
@@ -72,6 +74,9 @@ export const productApiSlice = apiSlice.injectEndpoints({
         url: `/admin/products/${productId}/`,
         method: "GET",
       }),
+      providesTags: (_result, _error, productId) => [
+        { type: "products", id: productId },
+      ],
     }),
 
     deleteProduct: builder.mutation({
@@ -233,6 +238,49 @@ export const productApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ["productSettings"],
     }),
+
+    // featured items
+    createSignature: builder.mutation({
+      query: (body) => ({
+        url: "/admin/products/signature-item/create/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["products", "featuredItems"],
+    }),
+
+    deleteSignature: builder.mutation({
+      query: (productId) => ({
+        url: `/admin/products/signature-item/delete/${productId}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["products", "featuredItems"],
+    }),
+
+    createOfferItem: builder.mutation({
+      query: (body) => ({
+        url: "/admin/products/offer-item/create/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["products", "featuredItems"],
+    }),
+
+    deleteOfferItem: builder.mutation({
+      query: (productId) => ({
+        url: `/admin/products/offer-item/delete/${productId}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["products", "featuredItems"],
+    }),
+
+    featuredItem: builder.query({
+      query: () => ({
+        url: "/products/featured/",
+        method: "GET",
+      }),
+      providesTags: ["featuredItems"],
+    }),
   }),
 });
 
@@ -261,4 +309,10 @@ export const {
   useCollectionListQuery,
 
   useProductSettingsQuery,
+
+  useCreateSignatureMutation,
+  useDeleteSignatureMutation,
+  useCreateOfferItemMutation,
+  useDeleteOfferItemMutation,
+  useFeaturedItemQuery,
 } = productApiSlice;

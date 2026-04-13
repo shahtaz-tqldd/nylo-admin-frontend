@@ -236,127 +236,127 @@ export default function DataTable({
       <div className="rounded-lg border border-gray-200 !bg-white">
         <div className="custom-horizontal-scrollbar overflow-x-auto overflow-y-hidden">
           <Table>
-          <TableHeader>
-            <TableRow className="!bg-primary/10 !text-primary">
-              {isShowCheckbox && (
-                <TableHead className="w-12 px-4">
-                  <div className="flex items-center">
-                    <Checkbox
-                      aria-label="Select all"
-                      checked={
-                        current.length > 0 &&
-                        current.every((r) => selection.has(getRowId(r)))
-                      }
-                      onCheckedChange={toggleAllOnPage}
-                    />
-                  </div>
-                </TableHead>
-              )}
-              {columns.map((col) => (
-                <TableHead
-                  key={String(col.key)}
-                  className={` px-4 ${col.width ? String(col.width) : ""}`}
-                >
-                  <button
-                    className="flex items-center gap-2 w-full text-left"
-                    onClick={() => onSort(col)}
+            <TableHeader>
+              <TableRow className="!bg-primary/10 !text-primary">
+                {isShowCheckbox && (
+                  <TableHead className="w-12 px-4">
+                    <div className="flex items-center">
+                      <Checkbox
+                        aria-label="Select all"
+                        checked={
+                          current.length > 0 &&
+                          current.every((r) => selection.has(getRowId(r)))
+                        }
+                        onCheckedChange={toggleAllOnPage}
+                      />
+                    </div>
+                  </TableHead>
+                )}
+                {columns.map((col) => (
+                  <TableHead
+                    key={String(col.key)}
+                    className={`px-4 ${col.width ? String(col.width) : ""}`}
                   >
-                    <span>{col.header}</span>
-                    {col.sortable ? (
-                      <ChevronsUpDown className="h-4 w-4 opacity-50" />
-                    ) : null}
-                  </button>
-                </TableHead>
-              ))}
-
-              {isShowActions ? (
-                <TableHead className="w-12 px-4">Actions</TableHead>
-              ) : null}
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {isLoading ? (
-              skeletonRows.map((rowIdx) => (
-                <TableRow key={`skeleton-row-${rowIdx}`}>
-                  {isShowCheckbox && (
-                    <TableCell className="w-12 px-4">
-                      <div className="h-4 w-4 animate-pulse rounded bg-gray-200" />
-                    </TableCell>
-                  )}
-
-                  {columns.map((col) => (
-                    <TableCell
-                      key={`skeleton-cell-${rowIdx}-${String(col.key)}`}
-                      className={`py-4 px-4 ${
-                        col.width ? String(col.width) : ""
-                      }`}
+                    <button
+                      className="flex items-center gap-2 w-full text-left"
+                      onClick={() => onSort(col)}
                     >
-                      <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
-                    </TableCell>
-                  ))}
+                      <span>{col.header}</span>
+                      {col.sortable ? (
+                        <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                      ) : null}
+                    </button>
+                  </TableHead>
+                ))}
 
-                  {isShowActions ? (
-                    <TableCell className="w-12 px-4 text-center">
-                      <div className="ml-auto h-8 w-8 animate-pulse rounded-md bg-gray-200" />
-                    </TableCell>
-                  ) : null}
-                </TableRow>
-              ))
-            ) : current.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={tableColumnCount}>
-                  <div className="py-8 text-center text-sm text-muted-foreground">
-                    {emptyState ?? "No results."}
-                  </div>
-                </TableCell>
+                {isShowActions ? (
+                  <TableHead className="w-12 px-4">Actions</TableHead>
+                ) : null}
               </TableRow>
-            ) : (
-              current.map((row) => {
-                const rowId = getRowId(row);
-                return (
-                  <TableRow key={String(rowId)} className="hover:bg-muted/50">
+            </TableHeader>
+
+            <TableBody>
+              {isLoading ? (
+                skeletonRows.map((rowIdx) => (
+                  <TableRow key={`skeleton-row-${rowIdx}`}>
                     {isShowCheckbox && (
                       <TableCell className="w-12 px-4">
-                        <Checkbox
-                          checked={selection.has(rowId)}
-                          onCheckedChange={() => toggleRow(rowId)}
-                          aria-label={`Select row ${String(rowId)}`}
-                        />
+                        <div className="h-4 w-4 animate-pulse rounded bg-gray-200" />
                       </TableCell>
                     )}
 
                     {columns.map((col) => (
                       <TableCell
-                        key={String(col.key)}
-                        className={`py-4 opacity-75 px-4 ${
+                        key={`skeleton-cell-${rowIdx}-${String(col.key)}`}
+                        className={`py-4 px-4 ${
                           col.width ? String(col.width) : ""
                         }`}
                       >
-                        {col.render
-                          ? col.render(row)
-                          : col.accessor
-                            ? col.accessor(row)
-                            : row[col.key]}
+                        <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
                       </TableCell>
                     ))}
 
                     {isShowActions ? (
                       <TableCell className="w-12 px-4 text-center">
-                        <ThreeDotMenu
-                          actions={
-                            typeof rowActions === "function"
-                              ? rowActions(row)
-                              : (rowActions ?? getDefaultRowActions(rowId))
-                          }
-                        />
+                        <div className="ml-auto h-8 w-8 animate-pulse rounded-md bg-gray-200" />
                       </TableCell>
                     ) : null}
                   </TableRow>
-                );
-              })
-            )}
-          </TableBody>
+                ))
+              ) : current.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={tableColumnCount}>
+                    <div className="py-8 text-center text-sm text-muted-foreground">
+                      {emptyState ?? "No results."}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                current.map((row) => {
+                  const rowId = getRowId(row);
+                  return (
+                    <TableRow key={String(rowId)} className="hover:bg-muted/50">
+                      {isShowCheckbox && (
+                        <TableCell className="w-12 px-4">
+                          <Checkbox
+                            checked={selection.has(rowId)}
+                            onCheckedChange={() => toggleRow(rowId)}
+                            aria-label={`Select row ${String(rowId)}`}
+                          />
+                        </TableCell>
+                      )}
+
+                      {columns.map((col) => (
+                        <TableCell
+                          key={String(col.key)}
+                          className={`py-4 opacity-75 px-4 ${
+                            col.width ? String(col.width) : ""
+                          }`}
+                        >
+                          {col.render
+                            ? col.render(row)
+                            : col.accessor
+                              ? col.accessor(row)
+                              : row[col.key]}
+                        </TableCell>
+                      ))}
+
+                      {isShowActions ? (
+                        <TableCell className="w-12 px-4 text-center">
+                          <ThreeDotMenu
+                            actions={
+                              typeof rowActions === "function"
+                                ? rowActions(row)
+                                : (rowActions ?? getDefaultRowActions(rowId))
+                            }
+                          />
+                        </TableCell>
+                      ) : null}
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
           </Table>
         </div>
       </div>

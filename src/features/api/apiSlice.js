@@ -76,7 +76,15 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
 export const apiSlice = createApi({
   reducerPath: "apiSlice",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["auth", "myProfile", "products", "productSettings"],
+  tagTypes: [
+    "auth",
+    "myProfile",
+    "products",
+    "productSettings",
+    "orders",
+    "productOffers",
+    "featuredItems",
+  ],
   keepUnusedDataFor: 300,
   refetchOnMountOrArgChange: false,
   refetchOnReconnect: true,

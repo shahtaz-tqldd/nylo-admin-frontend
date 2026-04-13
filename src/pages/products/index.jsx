@@ -10,12 +10,20 @@ import DeleteDialog from "@/components/dialog/delete-dialog";
 import { Layers, Plus } from "lucide-react";
 import MultiSelectFilter from "@/components/dropdown/multi-select-filter";
 import { Text, Title } from "@/components/ui/typography";
+import ProductDetailsDrawer from "./product-details-drawer";
+import ProductOfferDialog from "./product-offer-dialog";
 
 // services
 import {
+  useCreateOfferItemMutation,
+  useCreateSignatureMutation,
+  useDeleteOfferItemMutation,
   useDeleteProductMutation,
+  useDeleteSignatureMutation,
+  useProductDetailsQuery,
   useProductListQuery,
   useProductSettingsQuery,
+  useFeaturedItemQuery,
 } from "@/features/products/productApiSlice";
 
 const ProductPage = () => {
@@ -29,11 +37,41 @@ const ProductPage = () => {
   });
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false);
+  const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
+  const [dialogConfig, setDialogConfig] = useState({
+    type: "delete-product",
+    title: "Are you absolutely sure?",
+    description:
+      "This action cannot be undone. This will permanently delete the item.",
+    confirmLabel: "Delete",
+    loadingLabel: "Deleting...",
+  });
   const navigate = useNavigate();
   const { data: settingsData } = useProductSettingsQuery();
   const { data, isLoading } = useProductListQuery(filters);
+  const { data: selectedProductDetails, isLoading: isProductDetailsLoading } =
+    useProductDetailsQuery(selectedProduct?.id, {
+      skip: !selectedProduct?.id || !isDetailsDrawerOpen,
+    });
+  const {
+    data: productOfferAssignments,
+    isLoading: isOfferAssignmentsLoading,
+  } = useFeaturedItemQuery(undefined, {
+    skip: !isOfferDialogOpen,
+  });
+  const [createSignature, { isLoading: isSignatureSaving }] =
+    useCreateSignatureMutation();
+  const [createOfferItem, { isLoading: isOfferItemSaving }] =
+    useCreateOfferItemMutation();
+  const [deleteSignature, { isLoading: isDeleteSignatureLoading }] =
+    useDeleteSignatureMutation();
+  const [deleteOfferItem, { isLoading: isDeleteOfferItemLoading }] =
+    useDeleteOfferItemMutation();
+
   const PLACEHOLDER_IAMGE =
     "https://images.unsplash.com/photo-1529810313688-44ea1c2d81d3?q=80&w=100";
+
   const settings = settingsData?.data ?? {};
   const products = useMemo(
     () =>
@@ -42,11 +80,17 @@ const ProductPage = () => {
         title: item?.title,
         brand: item?.brand,
         image_url: item?.image_url,
+        is_signature: item?.is_signature_item,
+        is_offer: item?.is_offer_item,
         price: item?.price,
-        category: item?.category_name,
-        stock: item?.total_stock,
+        category: item?.category?.name,
+        stock: item?.total_stock || (
+          <span className="text-red-600 text-xs font-semibold">
+            Out of stock
+          </span>
+        ),
         created_at: item?.created_at,
-        order_count: item?.total_order_palced,
+        order_count: item?.orders_count || "-",
         status: item?.is_active ? "Active" : "Inactive",
       })) || [],
     [data?.data],
@@ -117,7 +161,19 @@ const ProductPage = () => {
           />
           <div>
             <h2 className="font-semibold">{item?.title}</h2>
-            <p className="text-sm opacity-60">{item?.brand}</p>
+            <div className="flex gap-2 mt-1">
+              <p className="text-sm opacity-60">{item?.brand}</p>
+              {item?.is_signature && (
+                <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-1 py-0.5 rounded">
+                  Signature
+                </span>
+              )}
+              {item?.is_offer && (
+                <span className="bg-green-100 text-green-800 text-xs font-semibold px-1 py-0.5 rounded">
+                  Offer
+                </span>
+              )}
+            </div>
           </div>
         </div>
       ),
@@ -146,17 +202,77 @@ const ProductPage = () => {
   const productRowActions = (product) => [
     {
       label: "View",
-      onSelect: () => navigate(`/products/update/${product.id}`),
+      onSelect: () => {
+        setSelectedProduct(product);
+        setIsDetailsDrawerOpen(true);
+      },
     },
     {
       label: "Update",
       onSelect: () => navigate(`/products/update/${product.id}`),
     },
+    ...(!product?.is_signature && !product?.is_offer
+      ? [
+          {
+            label: "Add Offer",
+            onSelect: () => {
+              setSelectedProduct(product);
+              setIsOfferDialogOpen(true);
+            },
+          },
+        ]
+      : []),
+    ...(product?.is_signature
+      ? [
+          {
+            label: "Remove Signature",
+            onSelect: () => {
+              setSelectedProduct(product);
+              setDialogConfig({
+                type: "remove-signature",
+                title: "Remove signature product?",
+                description:
+                  "This will remove the selected product from the signature section.",
+                confirmLabel: "Remove Signature",
+                loadingLabel: "Removing...",
+              });
+              setIsDeleteDialogOpen(true);
+            },
+          },
+        ]
+      : []),
+    ...(product?.is_offer
+      ? [
+          {
+            label: "Remove Offers",
+            onSelect: () => {
+              setSelectedProduct(product);
+              setDialogConfig({
+                type: "remove-offer",
+                title: "Remove offer product?",
+                description:
+                  "This will remove the selected product from the offer section.",
+                confirmLabel: "Remove Offer",
+                loadingLabel: "Removing...",
+              });
+              setIsDeleteDialogOpen(true);
+            },
+          },
+        ]
+      : []),
     {
       label: "Delete",
       destructive: true,
       onSelect: () => {
         setSelectedProduct(product);
+        setDialogConfig({
+          type: "delete-product",
+          title: "Are you absolutely sure?",
+          description:
+            "This action cannot be undone. This will permanently delete the item.",
+          confirmLabel: "Delete",
+          loadingLabel: "Deleting...",
+        });
         setIsDeleteDialogOpen(true);
       },
     },
@@ -169,9 +285,60 @@ const ProductPage = () => {
     const res = await deleteProduct(id);
     if (res?.data?.success) {
       toast.success(res?.message || "Product deleted");
-    } else {
-      toast.error(res?.error?.message || "Product delete failed!");
+      return true;
     }
+
+    toast.error(res?.error?.message || "Product delete failed!");
+    return false;
+  };
+
+  const handleRemoveSignature = async (id) => {
+    const res = await deleteSignature(id);
+
+    if (res?.data?.success) {
+      toast.success(res?.data?.message || "Signature removed");
+      return true;
+    }
+
+    toast.error(
+      res?.error?.data?.message ||
+        res?.error?.message ||
+        "Failed to remove signature item!",
+    );
+    return false;
+  };
+
+  const handleRemoveOffer = async (id) => {
+    const res = await deleteOfferItem(id);
+
+    if (res?.data?.success) {
+      toast.success(res?.data?.message || "Offer removed");
+      return true;
+    }
+
+    toast.error(
+      res?.error?.data?.message ||
+        res?.error?.message ||
+        "Failed to remove offer item!",
+    );
+    return false;
+  };
+
+  const handleConfirmDialog = () => {
+    if (!selectedProduct?.id) {
+      toast.error("No product selected");
+      return false;
+    }
+
+    if (dialogConfig.type === "remove-signature") {
+      return handleRemoveSignature(selectedProduct.id);
+    }
+
+    if (dialogConfig.type === "remove-offer") {
+      return handleRemoveOffer(selectedProduct.id);
+    }
+
+    return handleDelete(selectedProduct.id);
   };
 
   return (
@@ -250,10 +417,35 @@ const ProductPage = () => {
       <DeleteDialog
         isOpen={isDeleteDialogOpen}
         setIsOpen={setIsDeleteDialogOpen}
-        onConfirm={() => {
-          handleDelete(selectedProduct?.id);
-        }}
-        isLoading={deleteLoading}
+        onConfirm={handleConfirmDialog}
+        isLoading={
+          deleteLoading ||
+          isDeleteSignatureLoading ||
+          isDeleteOfferItemLoading
+        }
+        title={dialogConfig.title}
+        description={dialogConfig.description}
+        confirmLabel={dialogConfig.confirmLabel}
+        loadingLabel={dialogConfig.loadingLabel}
+      />
+
+      <ProductDetailsDrawer
+        open={isDetailsDrawerOpen}
+        setOpen={setIsDetailsDrawerOpen}
+        product={selectedProductDetails?.data}
+        isLoading={isProductDetailsLoading}
+      />
+
+      <ProductOfferDialog
+        key={`${selectedProduct?.id ?? "none"}-${isOfferDialogOpen ? "open" : "closed"}`}
+        open={isOfferDialogOpen}
+        setOpen={setIsOfferDialogOpen}
+        product={selectedProduct}
+        assignmentData={productOfferAssignments}
+        isLoading={isOfferAssignmentsLoading}
+        onCreateSignature={createSignature}
+        onCreateOfferItem={createOfferItem}
+        isSaving={isSignatureSaving || isOfferItemSaving}
       />
     </div>
   );

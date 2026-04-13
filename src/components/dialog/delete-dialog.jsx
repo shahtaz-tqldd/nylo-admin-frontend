@@ -14,20 +14,25 @@ const DeleteDialog = ({
   setIsOpen,
   onConfirm = () => {},
   isLoading = false,
+  title = "Are you absolutely sure?",
+  description = "This action cannot be undone. This will permanently delete the item.",
+  confirmLabel = "Delete",
+  loadingLabel = "Deleting...",
 }) => {
   const handleConfirm = async () => {
-    await onConfirm();
-    setIsOpen(false);
+    const shouldClose = await onConfirm();
+
+    if (shouldClose !== false) {
+      setIsOpen(false);
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Are you absolutely sure?</DialogTitle>
-          <DialogDescription>
-            This action cannot be undone. This will permanently delete the item.
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <DialogFooter>
@@ -40,7 +45,7 @@ const DeleteDialog = ({
             disabled={isLoading}
             onClick={handleConfirm}
           >
-            {isLoading ? "Deleting..." : "Delete"}
+            {isLoading ? loadingLabel : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

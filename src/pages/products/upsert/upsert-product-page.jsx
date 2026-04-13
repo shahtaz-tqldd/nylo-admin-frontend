@@ -191,8 +191,10 @@ const buildComparablePayload = ({
         code: color.color_code,
       })),
   },
+
   variants: data.variants.map((variant) => ({
     id: variant.id ?? null,
+    combination_key: variant.combinationKey,
     size: variant.sizeId,
     color: variant.colorId,
     sku: variant.sku,
