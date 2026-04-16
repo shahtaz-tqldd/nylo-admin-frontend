@@ -84,6 +84,7 @@ export const apiSlice = createApi({
     "orders",
     "productOffers",
     "featuredItems",
+    "store",
   ],
   keepUnusedDataFor: 300,
   refetchOnMountOrArgChange: false,
