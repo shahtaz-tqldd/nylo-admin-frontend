@@ -1,20 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FloatingInput } from "@/components/ui/input";
 import { Text, Title } from "@/components/ui/typography";
 import {
   User,
+  Camera,
   Lock,
   Shield,
-  Upload,
   Save,
   LogOut,
-  Eye,
-  EyeOff,
-  Camera,
-  Mail,
-  Phone,
   Plus,
   LogIn,
   Clock,
@@ -28,23 +23,225 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { userLoggedOut } from "@/features/auth/authSlice";
+import {
+  userDetailsFetched,
+  userLoggedOut,
+} from "@/features/auth/authSlice";
+import {
+  useChangePasswordMutation,
+  useUpdateProfileMutation,
+} from "@/features/auth/authApiSlice";
 import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+
+const getProfileFormState = (user) => ({
+  first_name: user?.first_name ?? "",
+  last_name: user?.last_name ?? "",
+  email: user?.email ?? "",
+  phone: user?.phone ?? "",
+  profile_picture_url: user?.profile_picture_url ?? "",
+});
+
+const ProfileInformationSection = ({ user, dispatch }) => {
+  const [updateProfile, { isLoading: isUpdatingProfile }] =
+    useUpdateProfileMutation();
+  const [profileData, setProfileData] = useState(getProfileFormState(user));
+  const [profilePictureFile, setProfilePictureFile] = useState(null);
+  const previewUrlRef = useRef(null);
+
+  useEffect(
+    () => () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+      }
+    },
+    [],
+  );
+
+  const initialProfileData = useMemo(() => getProfileFormState(user), [user]);
+
+  const changedProfileData = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(profileData).filter(
+          ([key, value]) => value !== initialProfileData[key],
+        ),
+      ),
+    [initialProfileData, profileData],
+  );
+
+  const profilePreviewUrl =
+    profilePictureFile?.previewUrl || profileData.profile_picture_url;
+  const hasProfileChanges =
+    Object.keys(changedProfileData).length > 0 || Boolean(profilePictureFile);
+
+  const handleProfileChange = (field, value) => {
+    setProfileData({ ...profileData, [field]: value });
+  };
+
+  const handleProfilePictureChange = (file) => {
+    if (!file) return;
+
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    previewUrlRef.current = previewUrl;
+    setProfilePictureFile({ file, previewUrl });
+    setProfileData((prev) => ({ ...prev, profile_picture_url: previewUrl }));
+  };
+
+  const handleSaveProfile = async () => {
+    if (!hasProfileChanges) return;
+
+    try {
+      const payload = new FormData();
+
+      Object.entries(changedProfileData).forEach(([key, value]) => {
+        if (key === "profile_picture_url") return;
+        payload.append(key, value);
+      });
+
+      if (profilePictureFile?.file) {
+        payload.append("profile_picture", profilePictureFile.file);
+      }
+
+      const response = await updateProfile(payload).unwrap();
+      const updatedUser =
+        response?.data &&
+        typeof response.data === "object" &&
+        !Array.isArray(response.data)
+          ? response.data
+          : null;
+
+      dispatch(
+        userDetailsFetched(
+          updatedUser
+            ? { ...user, ...updatedUser }
+            : {
+                ...user,
+                ...changedProfileData,
+                profile_picture_url: profilePictureFile?.previewUrl
+                  ? profilePictureFile.previewUrl
+                  : user?.profile_picture_url,
+              },
+        ),
+      );
+
+      if (previewUrlRef.current && updatedUser?.profile_picture_url) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = null;
+      }
+      setProfilePictureFile(null);
+
+      toast.success(
+        response?.message || response?.data?.message || "Profile updated.",
+      );
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to update profile.");
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-lg border shadow-sm p-6">
+      <div className="flex items-center gap-2 mb-6">
+        <User className="w-5 h-5 text-gray-700" />
+        <h2 className="text-lg font-semibold">Profile Information</h2>
+      </div>
+
+      <div className="space-y-6">
+        <div className="flex items-center gap-6">
+          <label
+            htmlFor="profile-picture-upload"
+            className="group relative block cursor-pointer"
+          >
+            <input
+              id="profile-picture-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                handleProfilePictureChange(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
+            <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-gray-200 bg-gray-100">
+              {profilePreviewUrl ? (
+                <img
+                  src={profilePreviewUrl}
+                  alt="Profile"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <User className="w-12 h-12 text-gray-400" />
+              )}
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/35 opacity-0 transition group-hover:opacity-100">
+              <Camera className="h-5 w-5 text-white" />
+            </div>
+          </label>
+          <div>
+            <h3 className="font-medium text-gray-900">Profile Photo</h3>
+            <Text className="mt-1 text-sm text-gray-500">
+              Click the image to upload a new profile picture.
+            </Text>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FloatingInput
+            name="first_name"
+            label="First Name"
+            value={profileData.first_name}
+            onChange={(e) => handleProfileChange("first_name", e.target.value)}
+          />
+          <FloatingInput
+            name="last_name"
+            label="Last Name"
+            value={profileData.last_name}
+            onChange={(e) => handleProfileChange("last_name", e.target.value)}
+          />
+          <FloatingInput
+            name="email"
+            label="Email Address"
+            type="email"
+            value={profileData.email}
+            onChange={(e) => handleProfileChange("email", e.target.value)}
+          />
+          <FloatingInput
+            name="phone"
+            label="Phone Number"
+            type="tel"
+            value={profileData.phone}
+            onChange={(e) => handleProfileChange("phone", e.target.value)}
+          />
+        </div>
+
+        <div className="flex justify-end">
+          <Button
+            onClick={handleSaveProfile}
+            disabled={!hasProfileChanges || isUpdatingProfile}
+            className="flex items-center gap-2"
+          >
+            <Save className="w-4 h-4" />
+            {isUpdatingProfile ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const SettingsPage = () => {
-  const [profileData, setProfileData] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    profilePhoto: null,
-  });
-
+  const { user } = useSelector((state) => state.auth);
   const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
+    current_password: "",
+    new_password: "",
+    confirm_password: "",
   });
+  const [changePassword, { isLoading: isChangingPassword }] =
+    useChangePasswordMutation();
 
   const [preferences, setPreferences] = useState({
     language: "en",
@@ -56,14 +253,32 @@ const SettingsPage = () => {
     twoFactorAuth: false,
   });
 
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [photoPreview, setPhotoPreview] = useState(null);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
-  const handleProfileChange = (field, value) => {
-    setProfileData({ ...profileData, [field]: value });
+  const handleSavePassword = async () => {
+    if (passwordData.new_password !== passwordData.confirm_password) {
+      toast.error("New passwords do not match.");
+      return;
+    }
+
+    if (passwordData.new_password.length < 8) {
+      toast.error("Password must be at least 8 characters long.");
+      return;
+    }
+
+    try {
+      const response = await changePassword(passwordData).unwrap();
+      toast.success(
+        response?.message || response?.data?.message || "Password changed.",
+      );
+      setPasswordData({
+        current_password: "",
+        new_password: "",
+        confirm_password: "",
+      });
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to change password.");
+    }
   };
 
   const handlePasswordChange = (field, value) => {
@@ -74,39 +289,6 @@ const SettingsPage = () => {
     setPreferences({ ...preferences, [field]: value });
   };
 
-  const handlePhotoUpload = (file) => {
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result);
-        setProfileData({ ...profileData, profilePhoto: file });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSaveProfile = () => {
-    console.log("Saving profile:", profileData);
-    alert("Profile updated successfully!");
-  };
-
-  const handleSavePassword = () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert("New passwords do not match!");
-      return;
-    }
-    if (passwordData.newPassword.length < 8) {
-      alert("Password must be at least 8 characters long!");
-      return;
-    }
-    console.log("Changing password");
-    alert("Password changed successfully!");
-    setPasswordData({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
-  };
   const dispatch = useDispatch();
   const handleLogout = () => {
     dispatch(userLoggedOut());
@@ -172,136 +354,11 @@ const SettingsPage = () => {
 
       <div className="grid grid-cols-3 gap-5">
         <div className="md:col-span-2 col-span-3 space-y-6">
-          {/* Profile Information */}
-          <div className="bg-white rounded-lg border shadow-sm p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <User className="w-5 h-5 text-gray-700" />
-              <h2 className="text-lg font-semibold">Profile Information</h2>
-            </div>
-
-            <div className="space-y-6">
-              {/* Profile Photo */}
-              <div className="flex items-center gap-6">
-                <div className="relative">
-                  <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
-                    {photoPreview ? (
-                      <img
-                        src={photoPreview}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <User className="w-12 h-12 text-gray-400" />
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    onClick={() =>
-                      document.getElementById("photo-upload").click()
-                    }
-                    className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full hover:bg-primary/90 transition-colors"
-                  >
-                    <Camera className="w-4 h-4" />
-                  </button>
-                  <input
-                    type="file"
-                    id="photo-upload"
-                    accept="image/*"
-                    onChange={(e) => handlePhotoUpload(e.target.files[0])}
-                    className="hidden"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">Profile Photo</h3>
-                  <Text className="text-sm text-gray-500 mt-1">
-                    JPG, PNG or GIF. Max size 2MB.
-                  </Text>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      document.getElementById("photo-upload").click()
-                    }
-                    className="mt-2 flex items-center gap-2"
-                  >
-                    <Upload className="w-4 h-4" />
-                    Upload Photo
-                  </Button>
-                </div>
-              </div>
-
-              {/* Name Fields */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    value={profileData.firstName}
-                    onChange={(e) =>
-                      handleProfileChange("firstName", e.target.value)
-                    }
-                    className="mt-1.5"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    value={profileData.lastName}
-                    onChange={(e) =>
-                      handleProfileChange("lastName", e.target.value)
-                    }
-                    className="mt-1.5"
-                  />
-                </div>
-              </div>
-
-              {/* Contact Fields */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="email">Email Address</Label>
-                  <div className="relative mt-1.5">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <Input
-                      id="email"
-                      type="email"
-                      value={profileData.email}
-                      onChange={(e) =>
-                        handleProfileChange("email", e.target.value)
-                      }
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <div className="relative mt-1.5">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={profileData.phone}
-                      onChange={(e) =>
-                        handleProfileChange("phone", e.target.value)
-                      }
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end">
-                <Button
-                  onClick={handleSaveProfile}
-                  className="flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  Save Profile
-                </Button>
-              </div>
-            </div>
-          </div>
+          <ProfileInformationSection
+            key={`${user?.id ?? "guest"}-${user?.profile_picture_url ?? ""}-${user?.email ?? ""}-${user?.phone ?? ""}-${user?.first_name ?? ""}-${user?.last_name ?? ""}`}
+            user={user}
+            dispatch={dispatch}
+          />
 
           {/* Activity Logs */}
           <div className="bg-white rounded-lg border shadow-sm p-6">
@@ -354,89 +411,43 @@ const SettingsPage = () => {
             </div>
 
             <div className="space-y-4 max-w-md">
-              <div>
-                <Label htmlFor="currentPassword">Current Password</Label>
-                <div className="relative mt-1.5">
-                  <Input
-                    id="currentPassword"
-                    type={showCurrentPassword ? "text" : "password"}
-                    value={passwordData.currentPassword}
-                    onChange={(e) =>
-                      handlePasswordChange("currentPassword", e.target.value)
-                    }
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showCurrentPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
+              <FloatingInput
+                name="current_password"
+                label="Current Password"
+                type="password"
+                value={passwordData.current_password}
+                onChange={(e) =>
+                  handlePasswordChange("current_password", e.target.value)
+                }
+              />
 
-              <div>
-                <Label htmlFor="newPassword">New Password</Label>
-                <div className="relative mt-1.5">
-                  <Input
-                    id="newPassword"
-                    type={showNewPassword ? "text" : "password"}
-                    value={passwordData.newPassword}
-                    onChange={(e) =>
-                      handlePasswordChange("newPassword", e.target.value)
-                    }
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showNewPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-                <p className="text-xs mt-1 text-black/60">
-                  Must be at least 8 characters long
-                </p>
-              </div>
+              <FloatingInput
+                name="new_password"
+                label="New Password"
+                type="password"
+                value={passwordData.new_password}
+                onChange={(e) =>
+                  handlePasswordChange("new_password", e.target.value)
+                }
+              />
+              <p className="-mt-2 text-xs text-black/60">
+                Must be at least 8 characters long
+              </p>
 
-              <div>
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                <div className="relative mt-1.5">
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={passwordData.confirmPassword}
-                    onChange={(e) =>
-                      handlePasswordChange("confirmPassword", e.target.value)
-                    }
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
+              <FloatingInput
+                name="confirm_password"
+                label="Confirm New Password"
+                type="password"
+                value={passwordData.confirm_password}
+                onChange={(e) =>
+                  handlePasswordChange("confirm_password", e.target.value)
+                }
+              />
 
               <div className="flex justify-end pt-2">
-                <Button onClick={handleSavePassword}>Change Password</Button>
+                <Button onClick={handleSavePassword} disabled={isChangingPassword}>
+                  {isChangingPassword ? "Changing..." : "Change Password"}
+                </Button>
               </div>
             </div>
           </div>

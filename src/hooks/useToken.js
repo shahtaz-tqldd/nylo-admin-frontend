@@ -4,8 +4,8 @@ export const getTokens = () => {
   const { accessToken: cookieAccessToken, refreshToken: cookieRefreshToken } =
     getAuthCookie();
 
-  const sessionAccessToken = sessionStorage.getItem("nylo_access");
-  const sessionRefreshToken = sessionStorage.getItem("nylo_refresh");
+  const sessionAccessToken = sessionStorage.getItem("nylo_admin_access");
+  const sessionRefreshToken = sessionStorage.getItem("nylo_admin_refresh");
 
   if (cookieRefreshToken) {
     return {
@@ -23,12 +23,12 @@ export const getTokens = () => {
 };
 
 export const clearTokens = () => {
-  sessionStorage.removeItem("nylo_access");
-  sessionStorage.removeItem("nylo_refresh");
+  sessionStorage.removeItem("nylo_admin_access");
+  sessionStorage.removeItem("nylo_admin_refresh");
   removeAuthCookie();
 };
 
 export const setSessionToken = (accessToken, refreshToken) => {
-  sessionStorage.setItem("nylo_access", accessToken);
-  sessionStorage.setItem("nylo_refresh", refreshToken);
+  sessionStorage.setItem("nylo_admin_access", accessToken);
+  sessionStorage.setItem("nylo_admin_refresh", refreshToken);
 };

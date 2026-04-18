@@ -57,7 +57,17 @@ export const authApiSlice = apiSlice.injectEndpoints({
     changePassword: builder.mutation({
       query: (payload) => {
         return {
-          url: `/auth/reset-password`,
+          url: `/auth/change-password/`,
+          method: "PATCH",
+          body: payload,
+        };
+      },
+    }),
+
+    updateProfile: builder.mutation({
+      query: (payload) => {
+        return {
+          url: `/auth/me/update/`,
           method: "PATCH",
           body: payload,
         };
@@ -84,5 +94,6 @@ export const {
   useResetPasswordMutation,
   useMeQuery,
   useChangePasswordMutation,
+  useUpdateProfileMutation,
   useCustomerListQuery,
 } = authApiSlice;
