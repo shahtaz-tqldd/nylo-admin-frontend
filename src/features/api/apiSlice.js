@@ -81,6 +81,7 @@ export const apiSlice = createApi({
     "myProfile",
     "products",
     "productSettings",
+    "coupons",
     "orders",
     "productOffers",
     "featuredItems",

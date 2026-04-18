@@ -7,6 +7,9 @@ const StatusBadge = ({ status }) => {
   const styles = {
     active: "bg-green-100 text-emerald-700",
     inactive: "bg-gray-100 text-gray-700",
+    expired: "bg-red-100 text-red-700",
+    scheduled: "bg-yellow-100 text-yellow-700",
+    "limit reached": "bg-red-100 text-red-700",
     blocked: "bg-red-100 text-red-700",
     pending: "bg-yellow-100 text-yellow-700",
     accepted: "bg-emerald-100 text-emerald-700",

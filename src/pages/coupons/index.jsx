@@ -1,188 +1,140 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import toast from "react-hot-toast";
+
 import { Button } from "@/components/ui/button";
-import { Text, Title } from "@/components/ui/typography";
-import { Plus, Copy } from "lucide-react";
-import UpdateCouponDialog from "./update-coupon-dialog";
+import DeleteDialog from "@/components/dialog/delete-dialog";
 import DataTable from "@/components/table";
 import StatusBadge from "@/components/ui/status";
-import { DEMO_COUPONS } from "./demo_data";
+import { Text, Title } from "@/components/ui/typography";
+import {
+  useCouponDetailsQuery,
+  useCouponListQuery,
+  useDeleteCouponMutation,
+} from "@/features/coupons/couponApiSlice";
+import { Copy, Plus } from "lucide-react";
+
+import CouponDetailsDrawer from "./coupon-details-drawer";
+import {
+  formatCouponDateTime,
+  formatCouponDiscount,
+  formatCouponStatus,
+  formatMoneyValue,
+  getCouponUsageProgress,
+} from "./coupon-utils";
+import UpdateCouponDialog from "./update-coupon-dialog";
 
 const CouponPage = () => {
-  const [coupons, setCoupons] = useState(DEMO_COUPONS);
-
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingCoupon, setEditingCoupon] = useState(null);
-
-  const [formData, setFormData] = useState({
-    code: "",
-    description: "",
-    discountType: "percentage",
-    discountValue: "",
-    minPurchase: "",
-    maxDiscount: "",
-    usageLimit: "",
-    startDate: "",
-    endDate: "",
-    status: "active",
+  const [couponDialogState, setCouponDialogState] = useState({
+    open: false,
+    item: null,
   });
-
-  const resetForm = () => {
-    setFormData({
-      code: "",
-      description: "",
-      discountType: "percentage",
-      discountValue: "",
-      minPurchase: "",
-      maxDiscount: "",
-      usageLimit: "",
-      startDate: "",
-      endDate: "",
-      status: "active",
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const { data, isLoading } = useCouponListQuery();
+  const [deleteCoupon, { isLoading: isDeleting }] = useDeleteCouponMutation();
+  const { data: detailResponse, isFetching: isDetailsLoading } =
+    useCouponDetailsQuery(selectedCoupon?.id, {
+      skip: !selectedCoupon?.id || !isDetailsOpen,
     });
-    setEditingCoupon(null);
+
+  const coupons = useMemo(() => {
+    const rawCoupons = data?.data?.results ?? data?.data ?? data?.results ?? [];
+    return Array.isArray(rawCoupons) ? rawCoupons : [];
+  }, [data]);
+  const detailedCoupon = detailResponse?.data ?? detailResponse ?? selectedCoupon;
+
+  const openCreateDialog = () => {
+    setCouponDialogState({ open: true, item: null });
   };
 
-  const handleOpenDialog = (coupon = null) => {
-    if (coupon) {
-      setEditingCoupon(coupon);
-      setFormData({
-        code: coupon.code,
-        description: coupon.description,
-        discountType: coupon.discountType,
-        discountValue: coupon.discountValue.toString(),
-        minPurchase: coupon.minPurchase.toString(),
-        maxDiscount: coupon.maxDiscount?.toString() || "",
-        usageLimit: coupon.usageLimit.toString(),
-        startDate: coupon.startDate,
-        endDate: coupon.endDate,
-        status: coupon.status,
-      });
-    } else {
-      resetForm();
-    }
-    setIsDialogOpen(true);
+  const openUpdateDialog = (coupon) => {
+    setCouponDialogState({ open: true, item: coupon });
   };
 
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    resetForm();
+  const openViewDrawer = (coupon) => {
+    setSelectedCoupon(coupon);
+    setIsDetailsOpen(true);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const openDeleteDialog = (coupon) => {
+    setSelectedCoupon(coupon);
+    setIsDeleteOpen(true);
+  };
 
-    if (editingCoupon) {
-      setCoupons(
-        coupons.map((c) =>
-          c.id === editingCoupon.id
-            ? {
-                ...c,
-                ...formData,
-                discountValue: parseFloat(formData.discountValue),
-                minPurchase: parseFloat(formData.minPurchase),
-                maxDiscount: formData.maxDiscount
-                  ? parseFloat(formData.maxDiscount)
-                  : null,
-                usageLimit: parseInt(formData.usageLimit),
-              }
-            : c
-        )
-      );
-    } else {
-      const newCoupon = {
-        id: coupons.length + 1,
-        ...formData,
-        discountValue: parseFloat(formData.discountValue),
-        minPurchase: parseFloat(formData.minPurchase),
-        maxDiscount: formData.maxDiscount
-          ? parseFloat(formData.maxDiscount)
-          : null,
-        usageLimit: parseInt(formData.usageLimit),
-        usedCount: 0,
-      };
-      setCoupons([...coupons, newCoupon]);
+  const handleDeleteCoupon = async () => {
+    if (!selectedCoupon?.id) {
+      toast.error("No coupon selected.");
+      return false;
     }
 
-    handleCloseDialog();
+    try {
+      const response = await deleteCoupon(selectedCoupon.id).unwrap();
+      toast.success(response?.message || "Coupon deleted successfully.");
+      setSelectedCoupon(null);
+      return true;
+    } catch (error) {
+      toast.error(error?.data?.message || "Coupon delete failed.");
+      return false;
+    }
   };
 
   const couponColumns = [
-    { key: "code", header: "Code" },
-    { key: "description", header: "Description" },
-    { key: "discount", header: "Discount" },
-    { key: "usage", header: "Usage" },
-    { key: "valid_date", header: "Valid Until", sortable: true },
-    { key: "status", header: "Status" },
-  ];
-
-  const UsageDisplay = ({ usedCount, usageLimit }) => {
-    const percentage = (usedCount / usageLimit) * 100;
-
-    return (
-      <div className="w-32">
-        <div className="text-sm text-gray-900 mb-1">
-          {usedCount} / {usageLimit}
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-1.5">
-          <div
-            className="bg-primary h-1.5 rounded-full transition-all"
-            style={{ width: `${percentage}%` }}
-          />
-        </div>
-      </div>
-    );
-  };
-
-  const CouponCode = ({ code }) => {
-    const handleCopyCode = (code) => {
-      navigator.clipboard.writeText(code);
-      alert(`Coupon code "${code}" copied!`);
-    };
-
-    return (
-      <div className="flex items-center gap-2">
-        <span className="font-mono font-semibold text-sm">{code}</span>
-        <button
-          onClick={() => handleCopyCode(code)}
-          className="text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <Copy className="w-4 h-4" />
-        </button>
-      </div>
-    );
-  };
-  // Main Mapper Function
-  const COUPONS_DATA = DEMO_COUPONS?.map((coupon) => ({
-    id: coupon.id,
-    code: <CouponCode code={coupon.code} />,
-    description: coupon.description,
-    discount: (
-      <div>
-        <div className="text-sm font-medium text-gray-900">
-          {coupon.discountType === "percentage"
-            ? `${coupon.discountValue}%`
-            : `$${coupon.discountValue}`}
-        </div>
-        {coupon.minPurchase > 0 && (
-          <div className="text-xs text-gray-500">
-            Min: ${coupon.minPurchase}
+    {
+      key: "code",
+      header: "Code",
+      accessor: (coupon) => coupon.code,
+      render: (coupon) => <CouponCode code={coupon.code} />,
+    },
+    {
+      key: "description",
+      header: "Description",
+      accessor: (coupon) => coupon.description || "",
+      render: (coupon) => coupon.description || "-",
+    },
+    {
+      key: "discount",
+      header: "Discount",
+      accessor: (coupon) => Number(coupon.value ?? 0),
+      render: (coupon) => (
+        <div>
+          <div className="text-sm font-medium text-gray-900">
+            {formatCouponDiscount(coupon)}
           </div>
-        )}
-      </div>
-    ),
-    usage: (
-      <UsageDisplay
-        usedCount={coupon.usedCount}
-        usageLimit={coupon.usageLimit}
-      />
-    ),
-    valid_date: coupon.endDate,
-    status: <StatusBadge status={coupon.status} />,
-  }));
+          <div className="text-xs text-gray-500">
+            Min: {formatMoneyValue(coupon.minimum_order_amount)}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "usage",
+      header: "Usage",
+      accessor: (coupon) => Number(coupon.used_count ?? 0),
+      render: (coupon) => (
+        <UsageDisplay
+          usedCount={coupon.used_count}
+          usageLimit={coupon.usage_limit}
+        />
+      ),
+    },
+    {
+      key: "valid_date",
+      header: "Valid Until",
+      sortable: true,
+      accessor: (coupon) => coupon.valid_until || "",
+      render: (coupon) => formatCouponDateTime(coupon.valid_until),
+    },
+    {
+      key: "status",
+      header: "Status",
+      accessor: (coupon) => formatCouponStatus(coupon),
+      render: (coupon) => <StatusBadge status={formatCouponStatus(coupon)} />,
+    },
+  ];
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="flbx">
         <div>
           <Title variant="lg">Coupons</Title>
@@ -190,33 +142,121 @@ const CouponPage = () => {
             Manage discount coupons and promotional codes
           </Text>
         </div>
-        <Button
-          onClick={() => handleOpenDialog()}
-          className="flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
+
+        <Button onClick={openCreateDialog} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
           New Coupon
         </Button>
       </div>
 
       <DataTable
-        data={COUPONS_DATA}
+        data={coupons}
         columns={couponColumns}
         defaultPageSize={10}
         isShowActions
         isShowCheckbox
+        isLoading={isLoading}
+        rowActions={(coupon) => [
+          {
+            label: "View",
+            onSelect: () => openViewDrawer(coupon),
+          },
+          {
+            label: "Edit",
+            onSelect: () => openUpdateDialog(coupon),
+          },
+          {
+            label: "Delete",
+            onSelect: () => openDeleteDialog(coupon),
+            destructive: true,
+          },
+        ]}
       />
 
-      {/* Create/Edit Dialog */}
       <UpdateCouponDialog
-        isOpen={isDialogOpen}
-        setIsOpen={setIsDialogOpen}
-        editingCoupon={editingCoupon}
-        formData={formData}
-        setFormData={setFormData}
-        handleSubmit={handleSubmit}
-        handleCloseDialog={handleCloseDialog}
+        open={couponDialogState.open}
+        setOpen={(open) =>
+          setCouponDialogState((prev) => ({
+            ...prev,
+            open,
+            item: open ? prev.item : null,
+          }))
+        }
+        initialData={couponDialogState.item}
       />
+
+      <CouponDetailsDrawer
+        open={isDetailsOpen}
+        setOpen={(open) => {
+          setIsDetailsOpen(open);
+          if (!open) {
+            setSelectedCoupon(null);
+          }
+        }}
+        coupon={detailedCoupon}
+        isLoading={isDetailsLoading}
+      />
+
+      <DeleteDialog
+        isOpen={isDeleteOpen}
+        setIsOpen={(open) => {
+          setIsDeleteOpen(open);
+          if (!open) {
+            setSelectedCoupon(null);
+          }
+        }}
+        onConfirm={handleDeleteCoupon}
+        isLoading={isDeleting}
+        title="Delete coupon?"
+        description={`This will permanently delete ${
+          selectedCoupon?.code ? `"${selectedCoupon.code}"` : "this coupon"
+        }.`}
+      />
+    </div>
+  );
+};
+
+const UsageDisplay = ({ usedCount, usageLimit }) => {
+  const progress = getCouponUsageProgress({
+    used_count: usedCount,
+    usage_limit: usageLimit,
+  });
+
+  return (
+    <div className="w-32">
+      <div className="mb-1 text-sm text-gray-900">
+        {usedCount || 0} / {usageLimit || "∞"}
+      </div>
+      <div className="h-1.5 w-full rounded-full bg-gray-200">
+        <div
+          className="h-1.5 rounded-full bg-primary transition-all"
+          style={{ width: `${progress ?? 0}%` }}
+        />
+      </div>
+    </div>
+  );
+};
+
+const CouponCode = ({ code }) => {
+  const handleCopyCode = async (value) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      toast.success(`Coupon code "${value}" copied.`);
+    } catch (_error) {
+      toast.error("Failed to copy coupon code.");
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="font-mono text-sm font-semibold">{code}</span>
+      <button
+        type="button"
+        onClick={() => handleCopyCode(code)}
+        className="text-gray-400 transition-colors hover:text-gray-600"
+      >
+        <Copy className="h-4 w-4" />
+      </button>
     </div>
   );
 };

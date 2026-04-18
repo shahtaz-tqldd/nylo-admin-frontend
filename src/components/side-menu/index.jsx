@@ -99,7 +99,7 @@ const SideMenu = () => {
   const profileImage = user?.profile_picture_url;
 
   return (
-    <div className="max-w-[240px] w-full h-screen bg-primary/15 p-6 pr-2 flex flex-col justify-between">
+    <aside className="h-screen w-[240px] min-w-[240px] shrink-0 bg-primary/15 p-6 pr-2 flex flex-col justify-between">
       <div className="space-y-6">
         <Link to="/" className="flex items-center">
           <img src={logo} className="h-11 w-11" alt="Nylo Admin Logo" />
@@ -149,7 +149,7 @@ const SideMenu = () => {
           <p className="text-xs text-primary/75 truncate">{role}</p>
         </div>
       </div>
-    </div>
+    </aside>
   );
 };
 
