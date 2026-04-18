@@ -9,6 +9,8 @@ import {
 
 import { Text, Title } from "@/components/ui/typography";
 import { useSalesSummaryQuery } from "@/features/store/storeApiSlice";
+import { cn } from "@/lib/utils";
+import SalesOverview from "./sales-overview";
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat("en-US", {
@@ -109,7 +111,7 @@ const MetricCard = ({ icon, label, value, trend, accentClassName }) => {
 };
 
 const DetailStat = ({ label, value, helper }) => (
-  <div className="rounded-2xl border border-slate-200 bg-white/80 p-4">
+  <div className="rounded-2xl border border-slate-200 bg-white/80 p-3">
     <Text variant="sm" className="text-slate-500">
       {label}
     </Text>
@@ -120,7 +122,7 @@ const DetailStat = ({ label, value, helper }) => (
   </div>
 );
 
-const SalesStat = () => {
+const SalesStat = ({ className }) => {
   const { data, isLoading, isError } = useSalesSummaryQuery();
   const summary = React.useMemo(() => normalizeSalesSummary(data), [data]);
 
@@ -129,13 +131,9 @@ const SalesStat = () => {
 
   const totalRevenue = formatCurrency(summary.total_revenue);
   const revenueThisMonth = formatCurrency(summary.revenue_this_month);
-  const previousMonthRevenue = formatCurrency(summary.previous_month_revenue);
   const totalOrders = formatNumber(summary.total_orders);
   const ordersThisMonth = formatNumber(summary.orders_placed_this_month);
   const averageOrderValue = formatCurrency(summary.average_order_value);
-  const previousAverageOrderValue = formatCurrency(
-    summary.previous_month_average_order_value,
-  );
 
   const revenueTrend = getTrendConfig(summary.revenue_growth_percentage);
   const averageOrderValueTrend = getTrendConfig(
@@ -144,10 +142,15 @@ const SalesStat = () => {
   const ordersTrend = getStatusConfig(`${totalOrders} total orders recorded`);
 
   return (
-    <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+    <section
+      className={cn(
+        "overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm",
+        className,
+      )}
+    >
       <div className="border-b border-slate-200 bg-[linear-gradient(135deg,rgba(16,185,129,0.14),rgba(255,255,255,1)_55%,rgba(15,23,42,0.04))] px-6 py-6 md:px-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
+          <div className="max-w-md">
             <div className="inline-flex items-center rounded-full border border-emerald-200 bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
               Sales snapshot
             </div>
@@ -160,23 +163,10 @@ const SalesStat = () => {
               with an average order value of {averageOrderValue}.
             </Text>
           </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <DetailStat
-              label="Revenue this month"
-              value={revenueThisMonth}
-              helper={`Previous month: ${previousMonthRevenue}`}
-            />
-            <DetailStat
-              label="Average order value"
-              value={averageOrderValue}
-              helper={`Previous month: ${previousAverageOrderValue}`}
-            />
-          </div>
         </div>
       </div>
 
-      <div className="grid gap-4 p-6 md:grid-cols-2 xl:grid-cols-3 md:p-8">
+      <div className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3 md:p-6">
         <MetricCard
           icon={DollarSign}
           label="Revenue Growth"
@@ -199,6 +189,13 @@ const SalesStat = () => {
           value={averageOrderValue}
           trend={averageOrderValueTrend}
           accentClassName="bg-[linear-gradient(180deg,rgba(255,247,237,1),rgba(255,255,255,1))]"
+        />
+      </div>
+      <div className="px-5 md:px-8 border-t py-8">
+        <SalesOverview
+          overview={data?.data?.sales_overview}
+          isLoading={isLoading}
+          isError={isError}
         />
       </div>
     </section>

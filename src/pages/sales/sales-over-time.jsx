@@ -160,7 +160,7 @@ const InsightCard = ({ icon: Icon, label, value, helper }) => (
       </Text>
     </div>
     <p className="mt-3 text-xl font-semibold text-slate-950">{value}</p>
-    <Text variant="sm" className="mt-2 text-slate-500">
+    <Text variant="sm" className="mt-2 !text-xs text-slate-500">
       {helper}
     </Text>
   </div>

@@ -110,9 +110,16 @@ export const storeApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    salesByCollection: builder.query({
+    salesByChannel: builder.query({
       query: () => ({
-        url: `/admin/shop/sales-by-collection`,
+        url: `/admin/shop/sales-by-channel`,
+        method: "GET",
+      }),
+    }),
+
+    topPerformers: builder.query({
+      query: () => ({
+        url: `/admin/shop/top-performers`,
         method: "GET",
       }),
     }),
@@ -136,5 +143,6 @@ export const {
   // sales
   useSalesSummaryQuery,
   useSalesOverTimeQuery,
-  useSalesByCollectionQuery,
+  useSalesByChannelQuery,
+  useTopPerformersQuery,
 } = storeApiSlice;
