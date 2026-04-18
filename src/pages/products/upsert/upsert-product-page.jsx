@@ -35,6 +35,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import CategoryUpsertDialog from "../settings/category-upsert-dialog";
+import BrandUpsertDialog from "../settings/brand-upsert-dialog";
 import { Card, CardHeader } from "@/components/ui/card";
 import SizeUpsertDialog from "../settings/size-upsert-dialog";
 import ColorUpsertDialog from "../settings/color-upsert-dialog";
@@ -98,7 +99,7 @@ const mapProductToFormValues = (product) => {
   return {
     title: product?.title ?? "",
     sku: product?.sku ?? "",
-    brand: product?.brand ?? "",
+    brand: product?.brand?.id ?? "",
     price: product?.price ?? "",
     comparePrice: product?.compare_price ?? "",
     costPerItem: product?.cost_price ?? "",
@@ -214,7 +215,7 @@ const buildOriginalComparablePayload = (product) => ({
   product_details: {
     title: product?.title ?? "",
     sku: product?.sku ?? "",
-    brand: product?.brand ?? "",
+    brand: product?.brand?.id ?? "",
     category: product?.category?.id ?? "",
     collection: (product?.collections ?? EMPTY_LIST)
       .map((collection) => collection.id)
@@ -333,6 +334,7 @@ const UpsertProductPage = () => {
   const [productImage, setProductImage] = useState(null);
   const [variantImages, setVariantImages] = useState({});
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [isBrandDialogOpen, setIsBrandDialogOpen] = useState(false);
   const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false);
   const [isSizeDialogOpen, setIsSizeDialogOpen] = useState(false);
   const [isColorDialogOpen, setIsColorDialogOpen] = useState(false);
@@ -389,6 +391,7 @@ const UpsertProductPage = () => {
 
   const settings = data?.data ?? {};
   const categories = settings.categories ?? EMPTY_LIST;
+  const brands = settings.brands ?? EMPTY_LIST;
   const sizes = settings.sizes ?? EMPTY_LIST;
   const colors = settings.colors ?? EMPTY_LIST;
   const collections = settings.collections ?? EMPTY_LIST;
@@ -886,10 +889,39 @@ const UpsertProductPage = () => {
                         </FloatingSelect>
                       )}
                     />
-                    <FloatingInput
-                      label="Brand *"
-                      placeholder="e.g., Nike"
-                      {...register("brand", { required: true })}
+                    <Controller
+                      control={control}
+                      name="brand"
+                      render={({ field }) => (
+                        <FloatingSelect
+                          label="Brand *"
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          disabled={isProductSettingsLoading}
+                        >
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="w-full justify-start font-normal"
+                            onClick={() => setIsBrandDialogOpen(true)}
+                          >
+                            <Plus size={14} className="mr-1" />
+                            Add new
+                          </Button>
+                          <SelectSeparator />
+                          {brands.map((brand) => (
+                            <SelectItem key={brand.id} value={brand.id}>
+                              {brand.name}
+                            </SelectItem>
+                          ))}
+                          {brands.length === 0 && (
+                            <span className="text-sm opacity-50 px-2 block py-2">
+                              No brands available
+                            </span>
+                          )}
+                        </FloatingSelect>
+                      )}
                     />
                     <FloatingInput
                       label="SKU"
@@ -1442,6 +1474,11 @@ const UpsertProductPage = () => {
         open={isCategoryDialogOpen}
         setOpen={setIsCategoryDialogOpen}
         categories={categories}
+      />
+      <BrandUpsertDialog
+        open={isBrandDialogOpen}
+        setOpen={setIsBrandDialogOpen}
+        brands={brands}
       />
       <SizeUpsertDialog
         open={isSizeDialogOpen}

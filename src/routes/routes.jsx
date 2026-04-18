@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import DashboardLayout from "../layouts/main";
 import Overview from "../pages/overview";
 import CustomerPage from "../pages/customers";
@@ -18,6 +18,10 @@ import PrivateRoute from "./private-route";
 import UpsertProductPage from "@/pages/products/upsert/upsert-product-page";
 import CollectionPage from "@/pages/collections";
 import ProductSettingsPage from "@/pages/products/settings";
+import StoreConfigurationPage from "@/pages/store/configuration";
+import StoreAboutPage from "@/pages/store/about";
+import StoreLegalPage from "@/pages/store/legal";
+import StoreFaqPage from "@/pages/store/faqs";
 
 export const routes = createBrowserRouter([
   {
@@ -75,6 +79,28 @@ export const routes = createBrowserRouter([
       {
         path: "/store",
         element: <StorePage />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="configuration" replace />,
+          },
+          {
+            path: "configuration",
+            element: <StoreConfigurationPage />,
+          },
+          {
+            path: "about-us",
+            element: <StoreAboutPage />,
+          },
+          {
+            path: "legal-content",
+            element: <StoreLegalPage />,
+          },
+          {
+            path: "faqs",
+            element: <StoreFaqPage />,
+          },
+        ],
       },
       {
         path: "/coupons",

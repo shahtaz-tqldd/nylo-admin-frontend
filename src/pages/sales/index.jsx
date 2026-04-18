@@ -2,72 +2,15 @@ import { Button } from "@/components/ui/button";
 import { Text, Title } from "@/components/ui/typography";
 import { Calendar } from "lucide-react";
 import React from "react";
+import SalesStat from "./sales-stats";
+import SalesOverTime from "./sales-over-time";
 
 const SalesPage = () => {
   return (
     <div className="space-y-8">
-      {/*header*/}
-      <div className="flbx">
-        <div>
-          <Title variant="lg">Sales Overview</Title>
-          <Text className="mt-2">
-            Track revenue, customer trends, and marketplace performance.
-          </Text>
-        </div>
-
-        <Button variant="outline" className="pr-4 pl-3">
-          <div className="flx gap-1.5">
-            <Calendar className="!h-4" />
-            November
-          </div>
-        </Button>
-      </div>
-
-      {/* TOP KPI */}
-      <section>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-          <div className="bg-gray-100 rounded-lg p-6">
-            <Title variant="sm">Total Revenue</Title>
-            <Text variant="sm" className="mt-2">
-              Display total revenue generated over selected period.
-            </Text>
-          </div>
-          <div className="bg-gray-100 rounded-lg p-6">
-            <Title variant="sm">Total Orders</Title>
-            <Text variant="sm" className="mt-2">
-              Total number of orders and order distribution summary.
-            </Text>
-          </div>
-          <div className="bg-gray-100 rounded-lg p-6">
-            <Title variant="sm">Avg Order Value</Title>
-            <Text variant="sm" className="mt-2">
-              Total active customers and new sign-ups.
-            </Text>
-          </div>
-          <div className="bg-gray-100 rounded-lg p-6">
-            <Title variant="sm">Returning Customers</Title>
-            <Text variant="sm" className="mt-2">
-              Inventory count, active products, and stock warnings.
-            </Text>
-          </div>
-        </div>
-      </section>
-
-      {/* SALES OVER TIME CHART*/}
-      <section className="border rounded-xl p-4 h-80 bg-white flex flex-col gap-4">
-        <div className="flbx">
-          <h2 className="text-lg font-semibold">Sales Over Time</h2>
-          {/* Date Filter Placeholder */}
-          <div className="w-32 h-8 border rounded-md flex items-center justify-center text-sm text-gray-600">
-            Date Filter
-          </div>
-        </div>
-
-        {/* chart placeholder */}
-        <div className="flex-1 h-full bg-gray-50 rounded-lg center">
-          Chart (Line / Area)
-        </div>
-      </section>
+      <Header />
+      <SalesStat />
+      <SalesOverTime />
 
       {/* TOP SELLING PRODUCTS */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -135,3 +78,23 @@ const SalesPage = () => {
 };
 
 export default SalesPage;
+
+const Header = () => {
+  return (
+    <div className="flbx">
+      <div>
+        <Title variant="lg">Sales Overview</Title>
+        <Text className="mt-2">
+          Track revenue, customer trends, and marketplace performance.
+        </Text>
+      </div>
+
+      <Button variant="outline" className="pr-4 pl-3">
+        <div className="flx gap-1.5">
+          <Calendar className="!h-4" />
+          November
+        </div>
+      </Button>
+    </div>
+  );
+};

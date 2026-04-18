@@ -78,7 +78,7 @@ const ProductPage = () => {
       data?.data?.map((item) => ({
         id: item?.id,
         title: item?.title,
-        brand: item?.brand,
+        brand: item?.brand?.name,
         image_url: item?.image_url,
         is_signature: item?.is_signature_item,
         is_offer: item?.is_offer_item,
@@ -113,30 +113,20 @@ const ProductPage = () => {
         value: String(collection.id),
       }),
     );
-
-    const brandOptions = [
-      ...new Set([
-        ...products.map((product) => product.brand),
-        ...filters.brand,
-      ]),
-    ]
-      .filter(Boolean)
-      .sort((left, right) => left.localeCompare(right))
-      .map((brand) => ({
-        label: brand,
-        value: brand,
-      }));
+    const brandOptions = (settings.brands ?? []).map((brand) => ({
+      label: brand.name,
+      value: String(brand.id),
+    }));
 
     return {
       category: categoryOptions,
       gender: genderOptions,
-      brand: brandOptions,
       collection: collectionOptions,
+      brand: brandOptions,
     };
   }, [
-    filters.brand,
-    products,
     settings.categories,
+    settings.brands,
     settings.collections,
     settings.genders,
   ]);
@@ -419,9 +409,7 @@ const ProductPage = () => {
         setIsOpen={setIsDeleteDialogOpen}
         onConfirm={handleConfirmDialog}
         isLoading={
-          deleteLoading ||
-          isDeleteSignatureLoading ||
-          isDeleteOfferItemLoading
+          deleteLoading || isDeleteSignatureLoading || isDeleteOfferItemLoading
         }
         title={dialogConfig.title}
         description={dialogConfig.description}

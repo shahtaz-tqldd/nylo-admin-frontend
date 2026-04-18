@@ -72,7 +72,7 @@ const ProductDetailsDrawer = ({ open, setOpen, product, isLoading }) => {
                     icon={<Boxes className="h-4 w-4" />}
                     label="Category"
                     value={product?.category?.name || "-"}
-                    secondary={product?.brand || "-"}
+                    secondary={product?.brand?.name || "-"}
                   />
                   <InfoCard
                     icon={<Package className="h-4 w-4" />}
@@ -84,7 +84,7 @@ const ProductDetailsDrawer = ({ open, setOpen, product, isLoading }) => {
 
                 <Section title="Overview">
                   <InfoRow label="Title" value={product?.title || "-"} />
-                  <InfoRow label="Brand" value={product?.brand || "-"} />
+                  <InfoRow label="Brand" value={product?.brand?.name || "-"} />
                   <InfoRow label="Gender" value={product?.gender || "-"} />
                   <InfoRow
                     label="Created On"

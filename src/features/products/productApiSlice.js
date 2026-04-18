@@ -24,14 +24,14 @@ const buildProductListUrl = ({
   }
 
   [
-    ["category", category],
+    ["category_id", category],
     ["gender", gender],
-    ["brand", brand],
-    ["collection", collection],
+    ["brand_id", brand],
+    ["collection_id", collection],
   ].forEach(([key, values]) => {
     values
       .filter(Boolean)
-      .forEach((value) => params.append("collection_id", value));
+      .forEach((value) => params.append(key, value));
   });
 
   const queryString = params.toString();
