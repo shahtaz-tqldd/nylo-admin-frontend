@@ -2,6 +2,14 @@ import { apiSlice } from "../api/apiSlice";
 
 export const storeApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    // dashboard
+    overview: builder.query({
+      query: () => ({
+        url: `/admin/shop/overview/`,
+        method: "GET",
+      }),
+    }),
+
     // store config
     updateStore: builder.mutation({
       query: ({ payload }) => ({
@@ -127,6 +135,8 @@ export const storeApiSlice = apiSlice.injectEndpoints({
 });
 
 export const {
+  useOverviewQuery,
+
   useStoreDetailsQuery,
   useUpdateStoreMutation,
   useLegalContentQuery,

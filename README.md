@@ -174,3 +174,9 @@ This project was built to:
 * Build production-quality **UI/UX and component systems**
 * Showcase understanding of **e-commerce logic and workflows**
 * Create a portfolio project that stands out in **scalability and real-world use cases**
+
+
+# TODO
+- new user invitation
+- autnetication and authorization
+- overview

@@ -2,6 +2,7 @@ import { apiSlice } from "../api/apiSlice";
 
 export const authApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    // personal profile
     login: builder.mutation({
       query: (data) => {
         return {
@@ -74,15 +75,76 @@ export const authApiSlice = apiSlice.injectEndpoints({
       },
     }),
 
+    // admin management
     customerList: builder.query({
-      query: ({ page, page_size, search_str }) => {
+      query: ({ page = "", page_size = "", search_str = "" } = {}) => {
         return {
-          url: `/auth/admin/customers?page=${page}&page_size=${page_size}&search_str=${
-            search_str || ""
-          }`,
+          url: `/admin/auth/customers?page=${page}&page_size=${page_size}&search_str=${search_str}`,
           method: "GET",
         };
       },
+    }),
+
+    adminUserList: builder.query({
+      query: ({ page = "", page_size = "", search_str = "" } = {}) => {
+        return {
+          url: `/admin/auth/admin-users?page=${page}&page_size=${page_size}&search_str=${search_str}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["adminUsers"],
+    }),
+
+    sendInvitation: builder.mutation({
+      query: (data) => {
+        return {
+          url: `/admin/auth/send-invitation/`,
+          method: "POST",
+          body: data,
+        };
+      },
+    }),
+
+    verifyAdminInvitation: builder.query({
+      query: (token) => {
+        return {
+          url: `/auth/admin-invitations/verify/`,
+          method: "GET",
+          params: { token },
+        };
+      },
+    }),
+
+    adminRegister: builder.mutation({
+      query: (data) => {
+        return {
+          url: `/auth/admin-register/`,
+          method: "POST",
+          body: data,
+        };
+      },
+      invalidatesTags: ["auth"],
+    }),
+
+    updateAdminUser: builder.mutation({
+      query: ({ data, adminUserId }) => {
+        return {
+          url: `/admin/auth/admin-users/${adminUserId}/`,
+          method: "PATCH",
+          body: data,
+        };
+      },
+      invalidatesTags: ["adminUsers"],
+    }),
+
+    deleteAdminUser: builder.mutation({
+      query: (adminUserId) => {
+        return {
+          url: `/admin/auth/admin-users/${adminUserId}/`,
+          method: "DELETE",
+        };
+      },
+      invalidatesTags: ["adminUsers"],
     }),
   }),
 });
@@ -95,5 +157,12 @@ export const {
   useMeQuery,
   useChangePasswordMutation,
   useUpdateProfileMutation,
+
   useCustomerListQuery,
+  useAdminUserListQuery,
+  useSendInvitationMutation,
+  useLazyVerifyAdminInvitationQuery,
+  useAdminRegisterMutation,
+  useUpdateAdminUserMutation,
+  useDeleteAdminUserMutation,
 } = authApiSlice;

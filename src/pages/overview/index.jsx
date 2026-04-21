@@ -1,5 +1,7 @@
 import { Text, Title } from "@/components/ui/typography";
 import React from "react";
+import SalesOverview from "./sales-overview";
+import OverviewStats from "./overview";
 
 const Overview = () => {
   return (
@@ -13,39 +15,10 @@ const Overview = () => {
       <div className="grid grid-cols-3 gap-6">
         {/* Left Side */}
         <div className="col-span-2 space-y-6">
-          <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gray-100 rounded-lg p-6">
-              <Title variant="sm">Total Revenue</Title>
-              <Text variant="sm" className="mt-2">
-                Display total revenue generated over selected period.
-              </Text>
-            </div>
-            <div className="bg-gray-100 rounded-lg p-6">
-              <Title variant="sm">Orders</Title>
-              <Text variant="sm" className="mt-2">
-                Total number of orders and order distribution summary.
-              </Text>
-            </div>
-            <div className="bg-gray-100 rounded-lg p-6">
-              <Title variant="sm">Customers</Title>
-              <Text variant="sm" className="mt-2">
-                Total active customers and new sign-ups.
-              </Text>
-            </div>
-          </section>
+          <OverviewStats />
 
           {/* Sales Section Placeholder */}
-          <section>
-            <div className="bg-gray-100 rounded-lg p-6 h-[380px]">
-              <div>
-                <Title>Sales Overview</Title>
-                <Text className="mt-1">
-                  Overall sales performance on this month
-                </Text>
-              </div>
-              <Text>Sales chart or performance module placeholder</Text>
-            </div>
-          </section>
+          <SalesOverview />
           {/* Top Products */}
           <section>
             <Title>Top Selling Products</Title>
